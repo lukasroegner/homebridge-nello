@@ -9,10 +9,13 @@ Don't use your nellio.io account which you use with your phone, otherwise you wi
 
 2. Install the plugin via npm:
 
+```bash
 npm install homebridge-nello -g
+```
 
 3. Add the configuration to your config.json file:
 
+```json
 {
     "platforms": [
         {
@@ -24,9 +27,12 @@ npm install homebridge-nello -g
         }
     ]
 }
+```
 
-username: the email address of your nello.io account
-password: the password of your account
-lockTimeout (optional): timeout in milliseconds, after which the lock will be displayed as locked after you unlock the door. Default value is 5000.
+**username**: the email address of your nello.io account
+
+**password**: the password of your account
+
+**lockTimeout** (optional): timeout in milliseconds, after which the lock will be displayed as locked after you unlock the door. Default value is 5000.
 
 4. Start homebridge

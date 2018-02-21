@@ -1,0 +1,27 @@
+{
+  "name": "homebridge-nello",
+  "version": "0.1.0",
+  "description": "Plugin for using the smart intercom system nello.io in homebridge.",
+  "license": "MIT",
+  "keywords": [
+    "homebridge-plugin",
+    "homebridge",
+    "homebridge-nello",
+    "nello",
+    "nello.io"
+  ],
+  "dependencies": {
+    "request": "^2.83.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/lukas.roegner/homebridge-nello.git"
+  },
+  "bugs": {
+    "url": "http://github.com/lukas.roegner/homebridge-nello/issues"
+  },
+  "engines": {
+    "node": ">=0.12.0",
+    "homebridge": ">=0.2.0"
+  }
+}
