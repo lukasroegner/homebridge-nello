@@ -4,16 +4,16 @@ This project contains a homebridge plugin for the smart intercom nello.io. All y
 
 ## Installation
 
-1. Create a new dedicated nello.io Account with admin rights that homebridge uses to communicate with the nello.io API. 
+Create a new dedicated nello.io Account with admin rights that homebridge uses to communicate with the nello.io API. 
 Don't use your nellio.io account which you use with your phone, otherwise you will be logged out each time homebridge communicates with the API.
 
-2. Install the plugin via npm:
+Install the plugin via npm:
 
 ```bash
 npm install homebridge-nello -g
 ```
 
-3. Add the configuration to your config.json file:
+Add the configuration to your config.json file:
 
 ```json
 {
@@ -34,5 +34,3 @@ npm install homebridge-nello -g
 **password**: the password of your account
 
 **lockTimeout** (optional): timeout in milliseconds, after which the lock will be displayed as locked after you unlock the door. Default value is 5000.
-
-4. Start homebridge
