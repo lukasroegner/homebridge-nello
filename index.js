@@ -93,6 +93,8 @@ function NelloPlatform(log, config, api) {
         }
       });
     }.bind(this));
+  } else {
+    log("Homebridge API not available, please update your homebridge version!");
   }
 }
 
