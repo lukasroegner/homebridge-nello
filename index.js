@@ -248,8 +248,7 @@ NelloPlatform.prototype.addAccessory = function(locationId) {
   accessory.context.locationId = locationId;
 
   // Creates the lock mechanism service for the accessory
-  accessory.addService(Service.LockMechanism);
-  accessory.addService(Service.AccessoryInformation);
+  accessory.addService(Service.LockMechanism, accessoryName);
   
   // configures the accessory
   platform.configureAccessory(accessory);
