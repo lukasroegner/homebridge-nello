@@ -244,7 +244,7 @@ NelloPlatform.prototype.addAccessory = function(locationId) {
   platform.log("Accessory name for location ID " + locationId + " is " + accessoryName + ".");
 
   // Creates the new accessory
-  var accessory = new Accessory(location.address.street + " " + location.address.number, UUIDGen.generate(location.address.street + " " + location.address.number));
+  var accessory = new Accessory(accessoryName, UUIDGen.generate(accessoryName));
   accessory.context.locationId = locationId;
 
   // Creates the lock mechanism service for the accessory
