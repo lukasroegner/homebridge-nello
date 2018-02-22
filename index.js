@@ -266,13 +266,13 @@ NelloPlatform.prototype.addAccessory = function(locationId) {
  */
 NelloPlatform.prototype.configureAccessory = function(accessory) {
   var platform = this;
-  platform.log("Configuring accessory with location ID " + accessory.context.location_id + ".");
+  platform.log("Configuring accessory with location ID " + accessory.context.locationId + ".");
 
   // Updates the accessory information
   var accessoryInformationService = accessory.getService(Service.AccessoryInformation);
   accessoryInformationService.setCharacteristic(Characteristic.Manufacturer, "nello.io")
   accessoryInformationService.setCharacteristic(Characteristic.Model, "Nello One")
-  accessoryInformationService.setCharacteristic(Characteristic.SerialNumber, accessory.context.location_id);
+  accessoryInformationService.setCharacteristic(Characteristic.SerialNumber, accessory.context.locationId);
 
   // Updates the lock mechanism
   var lockMechanismService = accessory.getService(Service.LockMechanism);
