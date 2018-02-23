@@ -191,12 +191,15 @@ NelloPlatform.prototype.open = function(locationId, retry, callback) {
       }
     });
   }
-
+  
   // Sends the request to open the lock
   request({
     uri: platform.config.apiUri + "/locations/" + locationId + "/users/" + platform.user.user_id + "/open",
     method: "POST",
-    jar: platform.jar
+    jar: platform.jar,
+    json: {
+        "type": "swipe"
+    }
   }, function (error, response, body) {
     
     // Checks if the API returned a positive result
