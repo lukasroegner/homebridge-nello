@@ -47,3 +47,15 @@ This plugin uses the HTTP API of nello.io for the following features:
 * All calls to the nello.io API are being sent via HTTPS. 
 * The password of the user account that is used by this plugin has to be specified in the `config.json` on the PC/Mac/Raspberry running homebridge. Therefore, please make sure that nobody can access this device within your local network without permission. 
 * In the Apple Home app, a lock can be easily unlocked with a single touch onto the icon. Please be careful not to open the door unintentionally. Some homebrige plugins contain an additional switch for "enabling" the actual lock. I would not use this feature, but feel free to request it, I'll implement it for you.
+
+## Upcoming Features
+
+The following features will be implemented soon, stay tuned!
+Important: I'll add all of the new features to the configuration, so that you can enable and disable all of them (if you don't like a feature).
+
+* "Heartbeat" for continuously checking the locations (locks) of a nello.io account
+* Reachability: Error while communicating with the nello API are not displayed in the Home App, this should be enhanced.
+* Security feature: an additional switch (service), which enables and disables the actual lock mechanism. This means you have to have to enable the lock mechanism first. This prevents unintentional unlocking. The switch can be set manually (e.g. in the Eve App) or you can integrate it into an automation (e.g. so that the lock mechansim only works when you are in a geofence).
+* Security feature "Double Slide-to-Unlock": The first unlock of the door in the Home App unlocks the actual lock mechanism, the second slide actually unlocks the door. Could also be used in combination with a geofence...feel free to share your ideas!
+* Doorbell Service: As soon as the public API is published by nello, I'll implement the doorbell service, so that you get notifications when someone rings the bell.
+* Video Doorbell Service: When implementing the Video Doorbell Service, an "unlock" button appears in the notification, might be a nice feature.
