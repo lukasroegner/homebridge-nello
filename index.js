@@ -31,68 +31,36 @@ function NelloPlatform(log, config, api) {
   var platform = this;
 
   // Defines the variables that are used throughout the platform
-  this.log = log;
-  this.config = config;
-  this.user = null;
-  this.locations = [];
-  this.jar = null;
-  this.accessories = [];
+  platform.log = log;
+  platform.config = config;
+  platform.user = null;
+  platform.locations = [];
+  platform.jar = null;
+  platform.accessories = [];
 
   // Initializes the configuration
-  this.config.apiUri = "https://api.nello.io";
-  this.config.lockTimeout = this.config.lockTimeout || 5000;
+  platform.config.apiUri = "https://api.nello.io";
+  platform.config.lockTimeout = platform.config.lockTimeout || 5000;
+  platform.config.locationUpdateInterval = platform.config.locationUpdateInterval || 60000;
+  platform.config.exposeReachability = platform.config.exposeReachability || false;
 
   // Checks whether the API object is available
   if (api) {
 
     // Saves the API object to register new locks later on
     log("Homebridge API available.");
-    this.api = api;
+    platform.api = api;
 
     // Subscribes to the event that is raised when homebrige finished loading cached accessories
-    this.api.on('didFinishLaunching', function() {
+    platform.api.on('didFinishLaunching', function() {
       platform.log("Cached accessories loaded.");
 
-      // Signs the user in
-      platform.signIn(function(result) {
-        if (result) {
-
-          // Cycles through all accessory to remove them
-          for (var i = 0; i < platform.accessories.length; i++) {
-
-            // Checks if the location exists
-            var locationExists = false;
-            for (var j = 0; j < platform.locations.length; j++) {
-              if (platform.locations[j].location_id == platform.accessories[i].context.locationId) {
-                locationExists = true;
-              }
-            }
-
-            // Removes the accessory
-            if (!locationExists) {
-              platform.removeAccessory(platform.locations[j].location_id);
-            }
-          }
-
-          // Cycles through all locations to add new accessories
-          for (var i = 0; i < platform.locations.length; i++) {
-
-            // Checks if an accessory already exists
-            var accessoryExists = false;
-            for (var j = 0; j < platform.accessories.length; j++) {
-              if (platform.accessories[j].context.locationId == platform.locations[i].location_id) {
-                accessoryExists = true;
-              }
-            }
-
-            // Creates the new accessory
-            if (!accessoryExists) {
-              platform.addAccessory(platform.locations[i].location_id);
-            }
-          }
-        }
-      });
-    }.bind(this));
+      // Starts the timer for updating locations (i.e. adding and removing locks of the user)
+      platform.updateLocations(true, function() {});
+      setInterval(function() {
+        platform.updateLocations(true, function() {});
+      }, platform.config.locationUpdateInterval);
+    });
   } else {
     log("Homebridge API not available, please update your homebridge version!");
   }
@@ -136,39 +104,28 @@ NelloPlatform.prototype.signIn = function(callback) {
     
     // Checks if the API returned a positive result
     if (error || response.statusCode != 200) {
-      platform.user = null;
-      platform.locations = [];
-      platform.jar = null;
+      platform.signOut();
       platform.log("Error while signing in.");
       return callback(false);
     }
 
     // Stores the user information
     platform.user = body.user;
-
-    // Gets the locations
-    request({
-      uri: platform.config.apiUri + "/locations",
-      method: "GET",
-      jar: platform.jar,
-      json: true
-    }, function (error, response, body) {
-      
-      // Checks if the API returned a positive result
-      if (error || response.statusCode != 200) {
-        platform.user = null;
-        platform.locations = [];
-        platform.jar = null;
-        platform.log("Error while retrieving the locations.");
-        return callback(false);
-      }
-
-      // Stores the location information
-      platform.locations = body.geofences;
-      platform.log("Signed in successfully.");
-      return callback(true);
-    });
+    platform.log("Signed in.");
+    return callback(true);
   });
+}
+
+/**
+ * Signs the user out. This is a helper method that clears the session. Is called everytime an API call fails.
+ */
+NelloPlatform.prototype.signOut = function() {
+  var platform = this;
+
+  // Clears the session information
+  platform.user = null;
+  platform.locations = [];
+  platform.jar = null;
 }
 
 /**
@@ -187,6 +144,7 @@ NelloPlatform.prototype.open = function(locationId, retry, callback) {
       if (result) {
         return platform.open(locationId, true, callback);
       } else {
+        platform.updateReachability();
         callback(false);
       }
     });
@@ -205,21 +163,138 @@ NelloPlatform.prototype.open = function(locationId, retry, callback) {
     // Checks if the API returned a positive result
     if (error || response.statusCode != 200) {
       platform.log("Opening door at location with ID " + locationId + " failed.");
-      platform.user = null;
-      platform.locations = [];
-      platform.jar = null;
+      platform.signOut();
 
       if (retry) {
         platform.log("Retry signing in and opening the door again.");
         return platform.open(locationId, false, callback);
       }
 
+      platform.updateReachability();
       return callback(false);
     }
     
     // Returns the positive result
+    platform.updateReachability();
+    platform.log("Opened door at location with ID " + locationId + ".");
     return callback(true);
   });
+}
+
+/**
+ * Sends a request to the API to get all locations.
+ * @param retry Determines whether the platform should retry signing in and getting the locations if the first attempt fails.
+ * @param callback The callback function that gets a boolean value indicating success or failure.
+ */
+NelloPlatform.prototype.updateLocations = function(retry, callback) {
+  var platform = this;
+
+  // Checks if the user is signed in 
+  platform.log("Getting locations from nello.io.");
+  if (!platform.user) {
+    return platform.signIn(function (result) {
+      if (result) {
+        return platform.updateLocations(true, callback);
+      } else {
+        platform.updateReachability();
+        callback(false);
+      }
+    });
+  }
+
+  // Sends a request to the API to get all locations of the user
+  request({
+    uri: platform.config.apiUri + "/locations",
+    method: "GET",
+    jar: platform.jar,
+    json: true
+  }, function (error, response, body) {
+    
+    // Checks if the API returned a positive result
+    if (error || response.statusCode != 200) {
+      platform.log("Getting locations from nello.io failed.");
+      platform.signOut();
+
+      if (retry) {
+        platform.log("Retry signing in and getting locations again.");
+        return platform.updateLocations(false, callback);
+      }
+
+      platform.updateReachability();
+      return callback(false);
+    }
+
+    // Stores the location information
+    platform.locations = body.geofences;
+
+    // Cycles through all existing homebridge accessory to remove the ones that do not exist in nello.io
+    for (var i = 0; i < platform.accessories.length; i++) {
+
+      // Checks if the location exists
+      var locationExists = false;
+      for (var j = 0; j < platform.locations.length; j++) {
+        if (platform.locations[j].location_id == platform.accessories[i].context.locationId) {
+          locationExists = true;
+        }
+      }
+
+      // Removes the accessory
+      if (!locationExists) {
+        platform.removeAccessory(platform.locations[j].location_id);
+      }
+    }
+
+    // Cycles through all locations to add new accessories
+    for (var i = 0; i < platform.locations.length; i++) {
+
+      // Checks if an accessory already exists
+      var accessoryExists = false;
+      for (var j = 0; j < platform.accessories.length; j++) {
+        if (platform.accessories[j].context.locationId == platform.locations[i].location_id) {
+          accessoryExists = true;
+        }
+      }
+
+      // Creates the new accessory
+      if (!accessoryExists) {
+        platform.addAccessory(platform.locations[i].location_id);
+      }
+    }
+
+    // Returns a positive result
+    platform.updateReachability();
+    platform.log("Got locations from nello.io.");
+    return callback(true);
+  });
+}
+
+/**
+ * Updates the reachability of all locks. This is based on the current sign in state.
+ */
+NelloPlatform.prototype.updateReachability = function() {
+  var platform = this;
+
+  // Updates the reachability
+  for (var i = 0; i < platform.accessories.length; i++) {
+    var lockCurrentStateCharacteristic = platform.accessories[i].getService(Service.LockMechanism).getCharacteristic(Characteristic.LockCurrentState);
+
+    // If the user is not signed in, the lock state should be unknown
+    if (!platform.user) {
+      if (platform.config.exposeReachability) {
+        lockCurrentStateCharacteristic.setValue(Characteristic.LockCurrentState.UNKNOWN);
+      } else {
+        lockCurrentStateCharacteristic.setValue(Characteristic.LockCurrentState.SECURED);
+      }
+    }
+    
+    // If the user is signed in, the value of the characteristic should only be updated when it is unknown
+    if (platform.user && !platform.accessories[i].context.reachable) {
+      lockCurrentStateCharacteristic.setValue(Characteristic.LockCurrentState.SECURED);
+    }
+
+    // Updates the reachable variable
+    platform.accessories[i].context.reachable = platform.user;
+  }
 }
 
 /**
@@ -251,6 +326,7 @@ NelloPlatform.prototype.addAccessory = function(locationId) {
   // Creates the new accessory
   var accessory = new Accessory(accessoryName, UUIDGen.generate(accessoryName));
   accessory.context.locationId = locationId;
+  accessory.context.reachable = true;
 
   // Creates the lock mechanism service for the accessory
   accessory.addService(Service.LockMechanism, accessoryName);
@@ -281,6 +357,7 @@ NelloPlatform.prototype.configureAccessory = function(accessory) {
   var lockMechanismService = accessory.getService(Service.LockMechanism);
   lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.SECURED);
   lockMechanismService.setCharacteristic(Characteristic.LockTargetState, Characteristic.LockTargetState.SECURED);
+  accessory.context.reachable = true;
   
   // Handles setting the target lock state
   lockMechanismService.getCharacteristic(Characteristic.LockTargetState).on('set', function(value, callback) {
@@ -289,11 +366,20 @@ NelloPlatform.prototype.configureAccessory = function(accessory) {
     // Actually opens the door
     if (value == Characteristic.LockTargetState.UNSECURED) {
       platform.open(accessory.context.locationId, true, function(result) {
-        lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.UNSECURED);
-        setTimeout(function() {
+        if (result) {
+
+          // Leaves the lock unsecured for some time (the lock timeout)
+          lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.UNSECURED);
+          setTimeout(function() {
+            lockMechanismService.setCharacteristic(Characteristic.LockTargetState, Characteristic.LockTargetState.SECURED);
+            lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.SECURED);
+          }, platform.config.lockTimeout);
+        } else {
+
+          // Updates the reachability and reverts the target state of the lock
           lockMechanismService.setCharacteristic(Characteristic.LockTargetState, Characteristic.LockTargetState.SECURED);
-          lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.SECURED);
-        }, platform.config.lockTimeout);
+          platform.updateReachability();
+        }
       });
     }
   });
