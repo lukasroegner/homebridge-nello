@@ -25,6 +25,7 @@ Add the configuration to your config.json file:
             "password": "<your-password>",
             "lockTimeout": 5000,
             "locationUpdateInterval": 60000,
+            "activityUpdateInterval": 10000,
             "exposeReachability": false
         }
     ]
@@ -37,7 +38,9 @@ Add the configuration to your config.json file:
 
 **lockTimeout** (optional): timeout in milliseconds, after which the lock will be displayed as locked after you unlock the door. Default value is 5000.
 
-**locationUpdateInterval** (optional): interval in milliseconds, in which the locks of a user are updated (i.e. new locks are added as accessories, locks that are no longer under control of the user are removed). This interval is also used to update the reachability of the locks (if the nello API is not reachable the locks are marked as "not rechable"). Default value is every minute (60000).
+**locationUpdateInterval** (optional): interval in milliseconds, in which the locks of a user are updated (i.e. new locks are added as accessories, locks that are no longer under control of the user are removed). This interval is also used to update the reachability of the locks (if the nello API is not reachable the locks are marked as "not rechable"). Default value is every minute (60000). Use 0 to disable continuous updates.
+
+**activityUpdateInterval** (optional): interval in milliseconds, in which the activity of the locks of a user are updated (i.e. door has been opened by another user outside HomeKit). This interval is used to toggle the lock state in order to enable notifications in HomeKit. Is also used to update the reachability of the locks (if the nello API is not reachable the locks are marked as "not rechable"). Default value is every 10 seconds. Use 0 to disable continuous updates. **As soon as the public nello.io API is ready, this mechanism will be changed to an event-subscription-based model rather than polling.**
 
 **exposeReachability** (optional): If this value is set to true, the state of the locks is changed to "unknown" if the nello.io API is not reachable. Default value is false, as currently API outages are common at nello.io. It might be annoying to get HomeKit notifications that "the door is unlocked" (which is the content of the notification, even if the state of the door is "jammed" or "unknown").
 
@@ -52,14 +55,12 @@ This plugin uses the HTTP API of nello.io for the following features:
 
 * All calls to the nello.io API are being sent via HTTPS. 
 * The password of the user account that is used by this plugin has to be specified in the `config.json` on the PC/Mac/Raspberry running homebridge. Therefore, please make sure that nobody can access this device within your local network without permission. 
-* In the Apple Home app, a lock can be easily unlocked with a single touch onto the icon. Please be careful not to open the door unintentionally. Some homebrige plugins contain an additional switch for "enabling" the actual lock. I would not use this feature, but feel free to request it, I'll implement it for you.
+* In the Apple Home app, a lock can be easily unlocked with a single touch onto the icon. Please be careful not to open the door unintentionally. Some homebrige plugins contain an additional switch for "enabling" the actual lock.
 
 ## Upcoming Features
 
 The following features will be implemented soon, stay tuned!
 Important: I'll add all of the new features to the configuration, so that you can enable and disable all of them (if you don't like a feature).
 
-* Security feature: an additional switch (service), which enables and disables the actual lock mechanism. This means you have to have to enable the lock mechanism first. This prevents unintentional unlocking. The switch can be set manually (e.g. in the Eve App) or you can integrate it into an automation (e.g. so that the lock mechansim only works when you are in a geofence).
-* Security feature "Double Slide-to-Unlock": The first unlock of the door in the Home App unlocks the actual lock mechanism, the second slide actually unlocks the door. Could also be used in combination with a geofence...feel free to share your ideas!
 * Doorbell Service: As soon as the public API is published by nello, I'll implement the doorbell service, so that you get notifications when someone rings the bell.
 * Video Doorbell Service: When implementing the Video Doorbell Service, an "unlock" button appears in the notification, might be a nice feature.
