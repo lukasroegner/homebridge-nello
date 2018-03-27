@@ -118,9 +118,17 @@ NelloPlatform.prototype.signIn = function(callback) {
   }, function (error, response, body) {
     
     // Checks if the API returned a positive result
-    if (error || response.statusCode != 200) {
+    if (error || response.statusCode != 200 || !body || !body.user) {
+      if (error) {
+        platform.log("Error while signing in. Error: " + error);
+      }
+      if (response.statusCode != 200) {
+        platform.log("Error while signing in. Status Code: " + response.statusCode);
+      }
+      if (!body || !body.user) {
+        platform.log("Error while signing in. Could not get user information from response: " + JSON.stringify(body));
+      }
       platform.signOut();
-      platform.log("Error while signing in.");
       return callback(false);
     }
 
@@ -204,7 +212,12 @@ NelloPlatform.prototype.open = function(locationId, retry, callback) {
 
     // Checks if the API returned a positive result
     if (error || response.statusCode != 200) {
-      platform.log("Opening door at location with ID " + locationId + " failed.");
+      if (error) {
+        platform.log("Opening door at location with ID " + locationId + " failed. Error: " + error);
+      }
+      if (response.statusCode != 200) {
+        platform.log("Opening door at location with ID " + locationId + " failed. Status Code: " + response.statusCode);
+      }
       platform.signOut();
 
       if (retry) {
@@ -257,8 +270,16 @@ NelloPlatform.prototype.updateLocations = function(retry, callback) {
   }, function (error, response, body) {
     
     // Checks if the API returned a positive result
-    if (error || response.statusCode != 200) {
-      platform.log("Getting locations from nello.io failed.");
+    if (error || response.statusCode != 200 || !body || !body.geofences) {
+      if (error) {
+        platform.log("Getting locations from nello.io failed. Error: " + error);
+      }
+      if (response.statusCode != 200) {
+        platform.log("Getting locations from nello.io failed. Status Code: " + response.statusCode);
+      }
+      if (!body || !body.geofences) {
+        platform.log("Getting locations from nello.io failed. Could not get locations from response: " + JSON.stringify(body));
+      }
       platform.signOut();
 
       if (retry) {
@@ -356,8 +377,16 @@ NelloPlatform.prototype.updateActivity = function(locationId, retry, callback) {
   }, function (error, response, body) {
     
     // Checks if the API returned a positive result
-    if (error || response.statusCode != 200) {
-      platform.log("Getting activity for door at location with ID " + locationId + " failed.");
+    if (error || response.statusCode != 200 || !body.activities) {
+      if (error) {
+        platform.log("Getting activity for door at location with ID " + locationId + " failed. Error: " + error);
+      }
+      if (response.statusCode != 200) {
+        platform.log("Getting activity for door at location with ID " + locationId + " failed. Status Code: " + response.statusCode);
+      }
+      if (!body || !body.activities) {
+        platform.log("Getting activity for door at location with ID " + locationId + " failed. Could not get activity from response: " + JSON.stringify(body));
+      }
       platform.signOut();
 
       if (retry) {
