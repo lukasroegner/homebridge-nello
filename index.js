@@ -84,7 +84,42 @@ function NelloPlatform(log, config, api) {
               if (body) {
                 var data = JSON.parse(body);
                 if (data.action) {
-                  platform.log("New webhook call: " + body);
+                  if (data.action == "swipe") {
+                    platform.log(data.data.name + " opened the door with ID " + data.data.location_id);
+                  }
+                  if (data.action == "tw") {
+                    platform.log("The door with ID " + data.data.location_id + " has been opened in the time window " + data.data.name + ".");
+                  }
+                  if (data.action == "geo") {
+                    platform.log(data.data.name + " opened the door with ID " + data.data.location_id + " via geofence.");
+                  }
+                  if (data.action == "deny") {
+                    platform.log("Someone rang the bell of the door with ID " + data.data.location_id + ".");
+                  }
+                  if (data.action == "tw" || data.action == "geo") {
+
+                    // Gets the corresponding accessory
+                    var accessory = null;
+                    for (var i = 0; i < platform.accessories.length; i++) {
+                      if (platform.accessories[i].context.locationId == data.data.location_id) {
+                        accessory = platform.accessories[i];
+                      }
+                    }
+                    if (accessory) {
+
+                      // Gets the lock state characteristic
+                      var lockCurrentStateCharacteristic = accessory.getService(Service.LockMechanism).getCharacteristic(Characteristic.LockCurrentState);
+  
+                      // Leaves the lock unsecured for some time (the lock timeout)
+                      lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.UNSECURED);
+                      setTimeout(function() {
+                        lockMechanismService.setCharacteristic(Characteristic.LockTargetState, Characteristic.LockTargetState.SECURED);
+                        lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.SECURED);
+                      }, platform.config.lockTimeout);
+                    } else {
+                      platform.log("Fake update of lock with ID " + data.data.location_id + " failed. The lock is not available anymore.");
+                    }
+                  }
                 }
               }
 
