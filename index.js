@@ -1,5 +1,7 @@
 
+var http = require("http");
 var request = require("request");
+var localtunnel = require("localtunnel");
 var Accessory, Service, Characteristic, UUIDGen;
 
 var pluginName = "homebridge-nello";
@@ -42,8 +44,9 @@ function NelloPlatform(log, config, api) {
   platform.config.apiUri = "https://public-api.nello.io";
   platform.config.authUri = "https://auth.nello.io";
   platform.config.lockTimeout = platform.config.lockTimeout || 5000;
+  platform.config.webhookLocalPort = platform.config.webhookLocalPort || 11937;
   platform.config.webhookRetryInterval = platform.config.webhookRetryInterval || 10000;
-  platform.config.locationUpdateInterval = platform.config.locationUpdateInterval == 0 ? 0 : (platform.config.locationUpdateInterval || 3600 * 24 * 1000);
+  platform.config.locationUpdateInterval = platform.config.locationUpdateInterval == 0 ? 0 : (platform.config.locationUpdateInterval || 3600000);
   platform.config.exposeReachability = platform.config.exposeReachability || false;
   
   // Checks whether the API object is available
@@ -66,6 +69,61 @@ function NelloPlatform(log, config, api) {
             platform.updateLocations(true, function() {});
           }, platform.config.locationUpdateInterval);
         }
+
+        // Creates the server for the webhooks
+        http.createServer(function (request, response) {
+
+          // Reads the body
+          var body = [];
+          request.on('data', function(chunk) {
+              body.push(chunk);
+          }).on('end', function() {
+              body = Buffer.concat(body).toString();
+              
+              // Checks whether the body contains content
+              if (body) {
+                var data = JSON.parse(body);
+                if (data.action) {
+                  platform.log("New webhook call: " + body);
+                }
+              }
+
+              // Responds with a 200 OK
+              response.writeHead(200);
+              response.end();
+          });
+        }).listen(platform.config.webhookLocalPort);
+
+        // Defines the function for handling the tunnel to localhost
+        var tunnelManagement = function() {
+          localtunnel(platform.config.webhookLocalPort, function(error, tunnel) {
+            
+            // Checks for errors and retries to establish the tunnel
+            if (error) {
+              if (!platform.config.webhookRetryInterval) {
+                tunnelManagement();
+              } else {
+                setTimeout(tunnelManagement, platform.config.webhookRetryInterval);
+              }
+            }
+            
+            // Updates the webhooks of all locations
+            for (var i = 0; i < platform.locations.length; i++) {
+              platform.updateWebhook(platform.locations[i].location_id, tunnel.url, true, function() { });
+            }
+          }).on('close', function() {
+            
+            // Reopens the tunnel
+            if (!platform.config.webhookRetryInterval) {
+              tunnelManagement();
+            } else {
+              setTimeout(tunnelManagement, platform.config.webhookRetryInterval);
+            }
+          });
+        };
+        
+        // Initially creates the tunnel
+        tunnelManagement();
       });
     });
   } else {
@@ -318,6 +376,88 @@ NelloPlatform.prototype.updateLocations = function(retry, callback) {
     // Returns a positive result
     platform.updateReachability();
     platform.log("Got locations from nello.io.");
+    return callback(true);
+  });
+}
+
+/**
+ * Sends a request to the API to update the webhook URI.
+ * @param locationId The ID of the location for which the webhook is to be updated.
+ * @param uri The URI of the new webhook.
+ * @param retry Determines whether the platform should retry signing in and updating the webhook if the first attempt fails.
+ * @param callback The callback function that gets a boolean value indicating success or failure.
+ */
+NelloPlatform.prototype.updateWebhook = function(locationId, uri, retry, callback) {
+  var platform = this;
+
+  // Checks if the location still exists
+  var locationExists = false;
+  for (var i = 0; i < platform.locations.length; i++) {
+    if (platform.locations[i].location_id == locationId) {
+      locationExists = true;
+    }
+  }
+  if (!locationExists) {
+    return callback(false);
+  }
+
+  // Checks if the webhook URL is provided
+  if (!uri) {
+    return callback(false);
+  }
+  // Checks if the user is signed in 
+  platform.log("Updating webhook for door with ID " + locationId + " to " + uri + ".");
+  if (!platform.token) {
+    return platform.signIn(function (result) {
+      if (result) {
+        return platform.updateWebhook(locationId, uri, true, callback);
+      } else {
+        platform.updateReachability();
+        return callback(false);
+      }
+    });
+  }
+
+  // Sends a request to the API to update the webhook
+  request({
+    uri: platform.config.apiUri + "/locations/" + locationId + "/webhook",
+    method: "PUT",
+    headers: {
+      "Authorization": platform.token.token_type + " " + platform.token.access_token
+    },
+    json: {
+      "url": uri,
+      "actions": [
+        "swipe",
+        "geo",
+        "tw",
+        "deny"
+      ]
+    }
+  }, function (error, response, body) {
+    
+    // Checks if the API returned a positive result
+    if (error || response.statusCode != 200) {
+      if (error) {
+        platform.log("Updating webhook failed. Error: " + error);
+      }
+      if (response.statusCode != 200) {
+        platform.log("Updating webhook failed. Status Code: " + response.statusCode);
+      }
+      platform.signOut();
+
+      if (retry) {
+        platform.log("Retry signing in and updating webhook again.");
+        return platform.updateWebhook(locationId, uri, false, callback);
+      }
+
+      platform.updateReachability();
+      return callback(false);
+    }
+
+    // Returns a positive result
+    platform.updateReachability();
+    platform.log("Updated webhook for door with ID " + locationId + " to " + uri + ".");
     return callback(true);
   });
 }
