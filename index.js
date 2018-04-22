@@ -33,16 +33,17 @@ function NelloPlatform(log, config, api) {
   // Defines the variables that are used throughout the platform
   platform.log = log;
   platform.config = config;
-  platform.user = null;
+  platform.token = null;
   platform.locations = [];
-  platform.jar = null;
   platform.accessories = [];
 
   // Initializes the configuration
-  platform.config.apiUri = "https://api.nello.io";
+  platform.config.clientId = "XYZ";
+  platform.config.apiUri = "https://public-api.nello.io";
+  platform.config.authUri = "https://auth.nello.io";
   platform.config.lockTimeout = platform.config.lockTimeout || 5000;
-  platform.config.locationUpdateInterval = platform.config.locationUpdateInterval == 0 ? 0 : (platform.config.locationUpdateInterval || 60000);
-  platform.config.activityUpdateInterval = platform.config.activityUpdateInterval == 0 ? 0 : (platform.config.activityUpdateInterval || 10000);
+  platform.config.webhookRetryInterval = platform.config.webhookRetryInterval || 10000;
+  platform.config.locationUpdateInterval = platform.config.locationUpdateInterval == 0 ? 0 : (platform.config.locationUpdateInterval || 3600 * 24 * 1000);
   platform.config.exposeReachability = platform.config.exposeReachability || false;
   
   // Checks whether the API object is available
@@ -65,15 +66,6 @@ function NelloPlatform(log, config, api) {
             platform.updateLocations(true, function() {});
           }, platform.config.locationUpdateInterval);
         }
-
-        // Starts the timer for updating the activity (i.e. change the lock state to enable HomeKit notification if the locks are used outside of HomeKit)
-        if (platform.config.activityUpdateInterval > 0) {
-          setInterval(function() {
-            for (var i = 0; i < platform.locations.length; i++) {
-              platform.updateActivity(platform.locations[i].location_id, true, function() {});
-            }
-          }, platform.config.activityUpdateInterval);
-        }
       });
     });
   } else {
@@ -89,8 +81,8 @@ NelloPlatform.prototype.signIn = function(callback) {
   var platform = this;
 
   // Validates the configuration
-  if (!platform.config.apiUri) {
-    platform.log("No API URI for nello.io provided.");
+  if (!platform.config.authUri) {
+    platform.log("No Authentication URI for nello.io provided.");
     return callback(false);
   }
   if (!platform.config.username) {
@@ -104,36 +96,36 @@ NelloPlatform.prototype.signIn = function(callback) {
 
   // Sends the login request to the API
   platform.log("Signing in.");
-  platform.user = null;
+  platform.token = null;
   platform.locations = [];
-  platform.jar = request.jar();
   request({
-      uri: platform.config.apiUri + "/login",
+      uri: platform.config.authUri + "/oauth/token/",
       method: "POST",
-      jar: platform.jar,
-      json: {
+      form: {
+          "client_id": platform.config.clientId,
           "username": platform.config.username,
-          "password": platform.config.password
+          "password": platform.config.password,
+          "grant_type": "password"
       }
   }, function (error, response, body) {
     
     // Checks if the API returned a positive result
-    if (error || response.statusCode != 200 || !body || !body.user) {
+    if (error || response.statusCode != 200 || !body || !body.access_token) {
       if (error) {
         platform.log("Error while signing in. Error: " + error);
       }
       if (response.statusCode != 200) {
         platform.log("Error while signing in. Status Code: " + response.statusCode);
       }
-      if (!body || !body.user) {
-        platform.log("Error while signing in. Could not get user information from response: " + JSON.stringify(body));
+      if (!body || !body.access_token) {
+        platform.log("Error while signing in. Could not get access token from response: " + JSON.stringify(body));
       }
       platform.signOut();
       return callback(false);
     }
 
-    // Stores the user information
-    platform.user = body.user;
+    // Stores the token information
+    platform.token = body;
     platform.log("Signed in.");
     return callback(true);
   });
@@ -146,9 +138,8 @@ NelloPlatform.prototype.signOut = function() {
   var platform = this;
 
   // Clears the session information
-  platform.user = null;
+  platform.token = null;
   platform.locations = [];
-  platform.jar = null;
 }
 
 /**
@@ -173,7 +164,7 @@ NelloPlatform.prototype.open = function(locationId, retry, callback) {
 
   // Checks if the user is signed in 
   platform.log("Opening door at location with ID " + locationId + ".");
-  if (!platform.user) {
+  if (!platform.token) {
     return platform.signIn(function (result) {
       if (result) {
         return platform.open(locationId, true, callback);
@@ -196,15 +187,13 @@ NelloPlatform.prototype.open = function(locationId, retry, callback) {
     return callback(false);
   }
 
-  // Sets the last activity date (so that the lock is not shown as unlocked twice due to updating the activity)
-  accessory.context.lastActivityDate = new Date();
-  accessory.context.ignoreNextActivity = true;
-
   // Sends the request to open the lock
   request({
-    uri: platform.config.apiUri + "/locations/" + locationId + "/users/" + platform.user.user_id + "/open",
-    method: "POST",
-    jar: platform.jar,
+    uri: platform.config.apiUri + "/locations/" + locationId + "/open",
+    method: "PUT",
+    headers: {
+      "Authorization": platform.token.token_type + " " + platform.token.access_token
+    },
     json: {
         "type": "swipe"
     }
@@ -229,10 +218,6 @@ NelloPlatform.prototype.open = function(locationId, retry, callback) {
       return callback(false);
     }
     
-    // Sets the last activity date (so that the lock is not shown as unlocked twice due to updating the activity)
-    accessory.context.lastActivityDate = new Date();
-    accessory.context.ignoreNextActivity = true;
-    
     // Returns the positive result
     platform.updateReachability();
     platform.log("Opened door at location with ID " + locationId + ".");
@@ -250,7 +235,7 @@ NelloPlatform.prototype.updateLocations = function(retry, callback) {
 
   // Checks if the user is signed in 
   platform.log("Getting locations from nello.io.");
-  if (!platform.user) {
+  if (!platform.token) {
     return platform.signIn(function (result) {
       if (result) {
         return platform.updateLocations(true, callback);
@@ -265,19 +250,21 @@ NelloPlatform.prototype.updateLocations = function(retry, callback) {
   request({
     uri: platform.config.apiUri + "/locations",
     method: "GET",
-    jar: platform.jar,
+    headers: {
+      "Authorization": platform.token.token_type + " " + platform.token.access_token
+    },
     json: true
   }, function (error, response, body) {
     
     // Checks if the API returned a positive result
-    if (error || response.statusCode != 200 || !body || !body.geofences) {
+    if (error || response.statusCode != 200 || !body || !body.data) {
       if (error) {
         platform.log("Getting locations from nello.io failed. Error: " + error);
       }
       if (response.statusCode != 200) {
         platform.log("Getting locations from nello.io failed. Status Code: " + response.statusCode);
       }
-      if (!body || !body.geofences) {
+      if (!body || !body.data) {
         platform.log("Getting locations from nello.io failed. Could not get locations from response: " + JSON.stringify(body));
       }
       platform.signOut();
@@ -292,7 +279,7 @@ NelloPlatform.prototype.updateLocations = function(retry, callback) {
     }
 
     // Stores the location information
-    platform.locations = body.geofences;
+    platform.locations = body.data;
 
     // Cycles through all existing homebridge accessory to remove the ones that do not exist in nello.io
     for (var i = 0; i < platform.accessories.length; i++) {
@@ -336,117 +323,6 @@ NelloPlatform.prototype.updateLocations = function(retry, callback) {
 }
 
 /**
- * Sends a request to the API to get the activity of a location.
- * @param locationId The ID of the location for which the activities are to be retrieved.
- * @param retry Determines whether the platform should retry signing in and getting the activity if the first attempt fails.
- * @param callback The callback function that gets a boolean value indicating success or failure.
- */
-NelloPlatform.prototype.updateActivity = function(locationId, retry, callback) {
-  var platform = this;
-
-  // Checks if the location still exists
-  var locationExists = false;
-  for (var i = 0; i < platform.locations.length; i++) {
-    if (platform.locations[i].location_id == locationId) {
-      locationExists = true;
-    }
-  }
-  if (!locationExists) {
-    return callback(false);
-  }
-
-  // Checks if the user is signed in 
-  platform.log("Getting activity for door at location with ID " + locationId + ".");
-  if (!platform.user) {
-    return platform.signIn(function (result) {
-      if (result) {
-        return platform.updateActivity(locationId, true, callback);
-      } else {
-        platform.updateReachability();
-        return callback(false);
-      }
-    });
-  }
-
-  // Sends a request to the API to get the activities of the location
-  request({
-    uri: platform.config.apiUri + "/locations/" + locationId + "/activity",
-    method: "GET",
-    jar: platform.jar,
-    json: true
-  }, function (error, response, body) {
-    
-    // Checks if the API returned a positive result
-    if (error || response.statusCode != 200 || !body.activities) {
-      if (error) {
-        platform.log("Getting activity for door at location with ID " + locationId + " failed. Error: " + error);
-      }
-      if (response.statusCode != 200) {
-        platform.log("Getting activity for door at location with ID " + locationId + " failed. Status Code: " + response.statusCode);
-      }
-      if (!body || !body.activities) {
-        platform.log("Getting activity for door at location with ID " + locationId + " failed. Could not get activity from response: " + JSON.stringify(body));
-      }
-      platform.signOut();
-
-      if (retry) {
-        platform.log("Retry signing in and getting activity again.");
-        return platform.updateActivity(locationId, false, callback);
-      }
-
-      platform.updateReachability();
-      return callback(false);
-    }
-
-    // Gets the corresponding accessory
-    var accessory = null;
-    for (var i = 0; i < platform.accessories.length; i++) {
-      if (platform.accessories[i].context.locationId == locationId) {
-        accessory = platform.accessories[i];
-      }
-    }
-    if (!accessory) {
-      platform.log("Got activity for door at location with ID " + locationId + ", however, the accessory does not exist anymore.");
-      return callback(true);
-    }
-
-    // Cycles through all recent activities
-    for (var i = 0; i < body.activities.length; i++) {
-
-      // Checks for open door activities
-      if (body.activities[i].type.startsWith("door.open")) {
-        var activityDate = new Date(body.activities[i].date);
-
-        // Checks if the last activity has been triggered by HomeKit itself
-        if (accessory.context.ignoreNextActivity) {
-          accessory.context.lastActivityDate = activityDate;
-          accessory.context.ignoreNextActivity = false;
-          continue;
-        }
-
-        // Checks if this entry is newer as the latest activity, in this case, a door unlock is simulated
-        if (accessory.context.lastActivityDate < activityDate) {
-          accessory.context.lastActivityDate = activityDate;
-
-          // Simulates the door unlock
-          platform.log("Simulating door unlock for door at location with ID " + locationId + ". Reason: " + body.activities[i].description + " Date: " + activityDate);
-          var lockMechanismService = accessory.getService(Service.LockMechanism);
-          lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.UNSECURED);
-          setTimeout(function() {
-            lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.SECURED);
-          }, platform.config.lockTimeout);
-        }
-      }
-    }
-
-    // Returns a positive result
-    platform.updateReachability();
-    platform.log("Got activity for door at location with ID " + locationId + ".");
-    return callback(true);
-  });
-}
-
-/**
  * Updates the reachability of all locks. This is based on the current sign in state.
  */
 NelloPlatform.prototype.updateReachability = function() {
@@ -457,7 +333,7 @@ NelloPlatform.prototype.updateReachability = function() {
     var lockCurrentStateCharacteristic = platform.accessories[i].getService(Service.LockMechanism).getCharacteristic(Characteristic.LockCurrentState);
 
     // If the user is not signed in, the lock state should be unknown
-    if (!platform.user) {
+    if (!platform.token) {
       if (platform.config.exposeReachability) {
         lockCurrentStateCharacteristic.setValue(Characteristic.LockCurrentState.UNKNOWN);
       } else {
@@ -466,12 +342,12 @@ NelloPlatform.prototype.updateReachability = function() {
     }
     
     // If the user is signed in, the value of the characteristic should only be updated when it is unknown
-    if (platform.user && !platform.accessories[i].context.reachable) {
+    if (platform.token && !platform.accessories[i].context.reachable) {
       lockCurrentStateCharacteristic.setValue(Characteristic.LockCurrentState.SECURED);
     }
 
     // Updates the reachable variable
-    platform.accessories[i].context.reachable = platform.user;
+    platform.accessories[i].context.reachable = !!platform.token;
   }
 }
 
@@ -505,8 +381,6 @@ NelloPlatform.prototype.addAccessory = function(locationId) {
   var accessory = new Accessory(accessoryName, UUIDGen.generate(accessoryName));
   accessory.context.locationId = locationId;
   accessory.context.reachable = true;
-  accessory.context.lastActivityDate = new Date();
-  accessory.context.ignoreNextActivity = false;
 
   // Creates the lock mechanism service for the accessory
   accessory.addService(Service.LockMechanism, accessoryName);
@@ -540,8 +414,6 @@ NelloPlatform.prototype.configureAccessory = function(accessory) {
 
   // Sets the default values for reachability and activity
   accessory.context.reachable = true;
-  accessory.context.lastActivityDate = new Date();
-  accessory.context.ignoreNextActivity = false;
   
   // Handles setting the target lock state
   lockMechanismService.getCharacteristic(Characteristic.LockTargetState).on('set', function(value, callback) {
