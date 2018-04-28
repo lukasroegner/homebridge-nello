@@ -47,7 +47,7 @@ function NelloPlatform(log, config, api) {
   platform.config.webhookLocalPort = platform.config.webhookLocalPort || 11937;
   platform.config.webhookRetryInterval = platform.config.webhookRetryInterval || 10000;
   platform.config.locationUpdateInterval = platform.config.locationUpdateInterval == 0 ? 0 : (platform.config.locationUpdateInterval || 3600000);
-  platform.config.exposeReachability = platform.config.exposeReachability || false;
+  platform.config.exposeReachability = platform.config.exposeReachability;
   
   // Checks whether the API object is available
   if (api) {
