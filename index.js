@@ -40,8 +40,8 @@ function NelloPlatform(log, config, api) {
   platform.accessories = [];
 
   // Initializes the configuration
-  platform.config.clientId = "XYZ";
-  platform.config.apiUri = "https://public-api.nello.io";
+  platform.config.clientId = "7d9500ef-f5cb-41cf-b684-4e5345f0c48b";
+  platform.config.apiUri = "https://public-api.nello.io/v1";
   platform.config.authUri = "https://auth.nello.io";
   platform.config.lockTimeout = platform.config.lockTimeout || 5000;
   platform.config.webhookLocalPort = platform.config.webhookLocalPort || 11937;
@@ -69,6 +69,9 @@ function NelloPlatform(log, config, api) {
             platform.updateLocations(true, function() {});
           }, platform.config.locationUpdateInterval);
         }
+
+        // Disables the server and webhooks (enabled in future versions)
+        return;
 
         // Creates the server for the webhooks
         http.createServer(function (request, response) {
@@ -194,6 +197,7 @@ NelloPlatform.prototype.signIn = function(callback) {
   request({
       uri: platform.config.authUri + "/oauth/token/",
       method: "POST",
+      json: true,
       form: {
           "client_id": platform.config.clientId,
           "username": platform.config.username,
@@ -282,14 +286,12 @@ NelloPlatform.prototype.open = function(locationId, retry, callback) {
 
   // Sends the request to open the lock
   request({
-    uri: platform.config.apiUri + "/locations/" + locationId + "/open",
+    uri: platform.config.apiUri + "/locations/" + locationId + "/open/",
     method: "PUT",
     headers: {
       "Authorization": platform.token.token_type + " " + platform.token.access_token
     },
-    json: {
-        "type": "swipe"
-    }
+    json: true
   }, function (error, response, body) {
 
     // Checks if the API returned a positive result
@@ -341,7 +343,7 @@ NelloPlatform.prototype.updateLocations = function(retry, callback) {
 
   // Sends a request to the API to get all locations of the user
   request({
-    uri: platform.config.apiUri + "/locations",
+    uri: platform.config.apiUri + "/locations/",
     method: "GET",
     headers: {
       "Authorization": platform.token.token_type + " " + platform.token.access_token
