@@ -566,7 +566,6 @@ NelloPlatform.prototype.addAccessory = function(locationId) {
   var accessory = new Accessory(accessoryName, UUIDGen.generate(accessoryName));
   accessory.context.locationId = locationId;
   accessory.context.reachable = true;
-  accessory.context.name = accessoryName;
 
   // Creates the lock mechanism service for the accessory
   accessory.addService(Service.LockMechanism, accessoryName);
@@ -588,7 +587,7 @@ NelloPlatform.prototype.addCamera = function (accessory) {
     return;
   }
 
-  var videoDoorbellName = accessory.context.name + " Camera";
+  var videoDoorbellName = accessory.displayName + " Camera";
   var uuid = UUIDGen.generate(videoDoorbellName);
   var videodoorbellAccessory = new Accessory(videoDoorbellName, uuid, Categories.VIDEO_DOORBELL);
 
