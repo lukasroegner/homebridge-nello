@@ -14,6 +14,8 @@ npm install homebridge-nello -g
 
 If you want to see a snapshot image for the video doorbell service please install ffmpeg (See here: https://github.com/KhaosT/homebridge-camera-ffmpeg/wiki)
 
+When you want to use the video doorbell service you must add a camera accessory over the "Add Accessory" menu and enter the same code you have defined for your Homebridge.
+
 Add the configuration to your config.json file:
 
 ```json
