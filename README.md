@@ -29,7 +29,7 @@ Add the configuration to your config.json file:
             "exposeReachability": true,
             "webhookLocalPort": 11937,
             "webhookRetryInterval":10000,
-            "videoDoorbell": true,
+            "videoDoorbell": false,
             "snapshotImage": "http://via.placeholder.com/1280x720"
         }
     ]
@@ -50,7 +50,7 @@ Add the configuration to your config.json file:
 
 **webhookRetryInterval** (optional): This interval defines the timeout before the next try to register the webhook if the first time fails. Default set to 10 seconds.
 
-**videoDoorbell** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification with unlock button (The lock and the camera must be in the same room the see the unlock button). Default set to true.
+**videoDoorbell** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification with unlock button (The lock and the camera must be in the same room the see the unlock button). Default set to false.
 
 **snapshotImage** (optional): You can set an image which will be shown as camera output. Default set to a placeholder image.
 

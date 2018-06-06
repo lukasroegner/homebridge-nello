@@ -111,7 +111,7 @@ function NelloPlatform(log, config, api) {
                   }
                   if (accessory) {
                     if (data.action == "deny") {
-                      if (accessory.camera) {
+                      if (accessory.videoDoorbell) {
                         accessory.camera.getCharacteristic(Characteristic.ProgrammableSwitchEvent).setValue(0);
                       }
                       return;
@@ -584,7 +584,7 @@ NelloPlatform.prototype.addAccessory = function(locationId) {
 NelloPlatform.prototype.addCamera = function (accessory) {
   var platform = this;
 
-  if (!platform.config.camera) {
+  if (!platform.config.videoDoorbell) {
     return;
   }
 
