@@ -2,7 +2,8 @@
 var http = require("http");
 var request = require("request");
 var localtunnel = require("localtunnel");
-var Accessory, Service, Characteristic, UUIDGen;
+var FFMPEG = require('./ffmpeg').FFMPEG;
+var hap, Accessory, Categories, Service, Characteristic, UUIDGen;
 
 var pluginName = "homebridge-nello";
 var platformName = "NelloPlatform";
@@ -15,10 +16,12 @@ module.exports = function(homebridge) {
 
   // Gets the classes required for implementation of the plugin
   Accessory = homebridge.platformAccessory;
+  Categories = homebridge.hap.Accessory.Categories;
   Service = homebridge.hap.Service;
   Characteristic = homebridge.hap.Characteristic;
   UUIDGen = homebridge.hap.uuid;
-  
+  hap = homebridge.hap;
+
   // Registers the dynamic nello platform, as the locks are read from the API and created dynamically
   homebridge.registerPlatform(pluginName, platformName, NelloPlatform, true);
 }
@@ -48,7 +51,8 @@ function NelloPlatform(log, config, api) {
   platform.config.webhookRetryInterval = platform.config.webhookRetryInterval || 10000;
   platform.config.locationUpdateInterval = platform.config.locationUpdateInterval == 0 ? 0 : (platform.config.locationUpdateInterval || 3600000);
   platform.config.exposeReachability = platform.config.exposeReachability;
-  
+  platform.config.snapshotImage = platform.config.snapshotImage || "http://via.placeholder.com/1280x720";
+
   // Checks whether the API object is available
   if (api) {
 
@@ -62,7 +66,7 @@ function NelloPlatform(log, config, api) {
 
       // Initially updates the locations to get the locks
       platform.updateLocations(true, function() {
-        
+
         // Starts the timer for updating locations (i.e. adding and removing locks of the user)
         if (platform.config.locationUpdateInterval > 0) {
           setInterval(function() {
@@ -70,72 +74,75 @@ function NelloPlatform(log, config, api) {
           }, platform.config.locationUpdateInterval);
         }
 
-        // Disables the server and webhooks (enabled in future versions)
-        return;
-
         // Creates the server for the webhooks
         http.createServer(function (request, response) {
 
           // Reads the body
           var body = [];
           request.on('data', function(chunk) {
-              body.push(chunk);
+            body.push(chunk);
           }).on('end', function() {
-              body = Buffer.concat(body).toString();
-              
-              // Checks whether the body contains content
-              if (body) {
-                var data = JSON.parse(body);
-                if (data.action) {
-                  if (data.action == "swipe") {
-                    platform.log(data.data.name + " opened the door with ID " + data.data.location_id);
-                  }
-                  if (data.action == "tw") {
-                    platform.log("The door with ID " + data.data.location_id + " has been opened in the time window " + data.data.name + ".");
-                  }
-                  if (data.action == "geo") {
-                    platform.log(data.data.name + " opened the door with ID " + data.data.location_id + " via geofence.");
-                  }
-                  if (data.action == "deny") {
-                    platform.log("Someone rang the bell of the door with ID " + data.data.location_id + ".");
-                  }
-                  if (data.action == "tw" || data.action == "geo") {
+            body = Buffer.concat(body).toString();
 
-                    // Gets the corresponding accessory
-                    var accessory = null;
-                    for (var i = 0; i < platform.accessories.length; i++) {
-                      if (platform.accessories[i].context.locationId == data.data.location_id) {
-                        accessory = platform.accessories[i];
+            // Checks whether the body contains content
+            if (body) {
+              var data = JSON.parse(body);
+              if (data.action) {
+                if (data.action == "swipe") {
+                  platform.log(data.data.name + " opened the door with ID " + data.data.location_id);
+                }
+                if (data.action == "tw") {
+                  platform.log("The door with ID " + data.data.location_id + " has been opened in the time window " + data.data.name + ".");
+                }
+                if (data.action == "geo") {
+                  platform.log(data.data.name + " opened the door with ID " + data.data.location_id + " via geofence.");
+                }
+                if (data.action == "deny") {
+                  platform.log("Someone rang the bell of the door with ID " + data.data.location_id + ".");
+                }
+                if (data.action == "swipe" || data.action == "tw" || data.action == "geo" || data.action == "deny") {
+
+                  // Gets the corresponding accessory
+                  var accessory = null;
+                  for (var i = 0; i < platform.accessories.length; i++) {
+                    if (platform.accessories[i].context.locationId == data.data.location_id) {
+                      accessory = platform.accessories[i];
+                    }
+                  }
+                  if (accessory) {
+                    if (data.action == "deny") {
+                      if (accessory.camera) {
+                        accessory.camera.getCharacteristic(Characteristic.ProgrammableSwitchEvent).setValue(0);
                       }
+                      return;
                     }
-                    if (accessory) {
 
-                      // Gets the lock state characteristic
-                      var lockCurrentStateCharacteristic = accessory.getService(Service.LockMechanism).getCharacteristic(Characteristic.LockCurrentState);
-  
-                      // Leaves the lock unsecured for some time (the lock timeout)
-                      lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.UNSECURED);
-                      setTimeout(function() {
-                        lockMechanismService.setCharacteristic(Characteristic.LockTargetState, Characteristic.LockTargetState.SECURED);
-                        lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.SECURED);
-                      }, platform.config.lockTimeout);
-                    } else {
-                      platform.log("Fake update of lock with ID " + data.data.location_id + " failed. The lock is not available anymore.");
-                    }
+                    // Gets the lock state characteristic
+                    var lockMechanismService = accessory.getService(Service.LockMechanism);
+
+                    // Leaves the lock unsecured for some time (the lock timeout)
+                    lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.UNSECURED);
+                    setTimeout(function() {
+                      lockMechanismService.setCharacteristic(Characteristic.LockTargetState, Characteristic.LockTargetState.SECURED);
+                      lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.SECURED);
+                    }, platform.config.lockTimeout);
+                  } else {
+                    platform.log("Fake update of lock with ID " + data.data.location_id + " failed. The lock is not available anymore.");
                   }
                 }
               }
+            }
 
-              // Responds with a 200 OK
-              response.writeHead(200);
-              response.end();
+            // Responds with a 200 OK
+            response.writeHead(200);
+            response.end();
           });
         }).listen(platform.config.webhookLocalPort);
 
         // Defines the function for handling the tunnel to localhost
         var tunnelManagement = function() {
           localtunnel(platform.config.webhookLocalPort, function(error, tunnel) {
-            
+
             // Checks for errors and retries to establish the tunnel
             if (error) {
               if (!platform.config.webhookRetryInterval) {
@@ -144,13 +151,13 @@ function NelloPlatform(log, config, api) {
                 setTimeout(tunnelManagement, platform.config.webhookRetryInterval);
               }
             }
-            
+
             // Updates the webhooks of all locations
             for (var i = 0; i < platform.locations.length; i++) {
               platform.updateWebhook(platform.locations[i].location_id, tunnel.url, true, function() { });
             }
           }).on('close', function() {
-            
+
             // Reopens the tunnel
             if (!platform.config.webhookRetryInterval) {
               tunnelManagement();
@@ -159,7 +166,7 @@ function NelloPlatform(log, config, api) {
             }
           });
         };
-        
+
         // Initially creates the tunnel
         tunnelManagement();
       });
@@ -195,17 +202,17 @@ NelloPlatform.prototype.signIn = function(callback) {
   platform.token = null;
   platform.locations = [];
   request({
-      uri: platform.config.authUri + "/oauth/token/",
-      method: "POST",
-      json: true,
-      form: {
-          "client_id": platform.config.clientId,
-          "username": platform.config.username,
-          "password": platform.config.password,
-          "grant_type": "password"
-      }
+    uri: platform.config.authUri + "/oauth/token/",
+    method: "POST",
+    json: true,
+    form: {
+      "client_id": platform.config.clientId,
+      "username": platform.config.username,
+      "password": platform.config.password,
+      "grant_type": "password"
+    }
   }, function (error, response, body) {
-    
+
     // Checks if the API returned a positive result
     if (error || response.statusCode != 200 || !body || !body.access_token) {
       if (error) {
@@ -312,7 +319,7 @@ NelloPlatform.prototype.open = function(locationId, retry, callback) {
       platform.updateReachability();
       return callback(false);
     }
-    
+
     // Returns the positive result
     platform.updateReachability();
     platform.log("Opened door at location with ID " + locationId + ".");
@@ -350,7 +357,7 @@ NelloPlatform.prototype.updateLocations = function(retry, callback) {
     },
     json: true
   }, function (error, response, body) {
-    
+
     // Checks if the API returned a positive result
     if (error || response.statusCode != 200 || !body || !body.data) {
       if (error) {
@@ -401,6 +408,7 @@ NelloPlatform.prototype.updateLocations = function(retry, callback) {
       for (var j = 0; j < platform.accessories.length; j++) {
         if (platform.accessories[j].context.locationId == platform.locations[i].location_id) {
           accessoryExists = true;
+          platform.addCamera(platform.accessories[j]);
         }
       }
 
@@ -457,7 +465,7 @@ NelloPlatform.prototype.updateWebhook = function(locationId, uri, retry, callbac
 
   // Sends a request to the API to update the webhook
   request({
-    uri: platform.config.apiUri + "/locations/" + locationId + "/webhook",
+    uri: platform.config.apiUri + "/locations/" + locationId + "/webhook/",
     method: "PUT",
     headers: {
       "Authorization": platform.token.token_type + " " + platform.token.access_token
@@ -472,7 +480,7 @@ NelloPlatform.prototype.updateWebhook = function(locationId, uri, retry, callbac
       ]
     }
   }, function (error, response, body) {
-    
+
     // Checks if the API returned a positive result
     if (error || response.statusCode != 200) {
       if (error) {
@@ -517,7 +525,7 @@ NelloPlatform.prototype.updateReachability = function() {
         lockCurrentStateCharacteristic.setValue(Characteristic.LockCurrentState.SECURED);
       }
     }
-    
+
     // If the user is signed in, the value of the characteristic should only be updated when it is unknown
     if (platform.token && !platform.accessories[i].context.reachable) {
       lockCurrentStateCharacteristic.setValue(Characteristic.LockCurrentState.SECURED);
@@ -540,7 +548,7 @@ NelloPlatform.prototype.addAccessory = function(locationId) {
   var location = null;
   for (var i = 0; i < platform.locations.length; i++) {
     if (platform.locations[i].location_id == locationId) {
-      location = platform.locations[i]; 
+      location = platform.locations[i];
     }
   }
 
@@ -558,16 +566,61 @@ NelloPlatform.prototype.addAccessory = function(locationId) {
   var accessory = new Accessory(accessoryName, UUIDGen.generate(accessoryName));
   accessory.context.locationId = locationId;
   accessory.context.reachable = true;
+  accessory.context.name = accessoryName;
 
   // Creates the lock mechanism service for the accessory
   accessory.addService(Service.LockMechanism, accessoryName);
-  
+
   // configures the accessory
   platform.configureAccessory(accessory);
 
   // Adds the accessory
   platform.api.registerPlatformAccessories(pluginName, platformName, [accessory]);
   platform.log("Accessory for location with ID " + locationId + " added.");
+
+  platform.addCamera(accessory);
+}
+
+NelloPlatform.prototype.addCamera = function (accessory) {
+  var platform = this;
+
+  if (!platform.config.camera) {
+    return;
+  }
+
+  var cameraName = accessory.context.name + " Camera";
+  var uuid = UUIDGen.generate(cameraName);
+  var videodoorbellAccessory = new Accessory(cameraName, uuid, Categories.VIDEO_DOORBELL);
+
+  var primaryService = new Service.Doorbell(cameraName);
+  primaryService.getCharacteristic(Characteristic.ProgrammableSwitchEvent).on('get', function (callback) {
+    // primaryService.getCharacteristic(Characteristic.ProgrammableSwitchEvent).setValue(0);
+    callback(null, 0);
+  });
+
+  // Setup and configure the camera services
+  var cameraSource = new FFMPEG(hap, {
+    "videoConfig": {
+      "source": "-re -i ",
+      "stillImageSource": "-i " + platform.config.snapshotImage,
+      "maxWidth": 1280,
+      "maxHeight": 720,
+      "maxFPS": 30
+    }
+  }, platform.log, 'ffmpeg');
+  videodoorbellAccessory.configureCameraSource(cameraSource);
+
+  // Setup HomeKit doorbell service
+  videodoorbellAccessory.addService(primaryService);
+
+  // Identify
+  videodoorbellAccessory.on('identify', function (a, callback) {
+    primaryService.getCharacteristic(Characteristic.ProgrammableSwitchEvent).setValue(0);
+    callback();
+  });
+
+  accessory.camera = primaryService;
+  platform.api.publishCameraAccessories("Video-doorbell", [videodoorbellAccessory]);
 }
 
 /**
@@ -591,7 +644,7 @@ NelloPlatform.prototype.configureAccessory = function(accessory) {
 
   // Sets the default values for reachability and activity
   accessory.context.reachable = true;
-  
+
   // Handles setting the target lock state
   lockMechanismService.getCharacteristic(Characteristic.LockTargetState).on('set', function(value, callback) {
     callback(null);

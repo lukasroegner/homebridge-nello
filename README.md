@@ -12,6 +12,8 @@ Install the plugin via npm:
 npm install homebridge-nello -g
 ```
 
+If you want to see a snapshot image for the video doorbell service please install ffmpeg (See here: https://github.com/KhaosT/homebridge-camera-ffmpeg/wiki)
+
 Add the configuration to your config.json file:
 
 ```json
@@ -24,7 +26,11 @@ Add the configuration to your config.json file:
             "password": "<your-password>",
             "lockTimeout": 5000,
             "locationUpdateInterval": 3600000,
-            "exposeReachability": true
+            "exposeReachability": true,
+            "webhookLocalPort": 11937,
+            "webhookRetryInterval":10000,
+            "videoDoorbell": true,
+            "snapshotImage": "http://via.placeholder.com/1280x720"
         }
     ]
 }
@@ -40,12 +46,21 @@ Add the configuration to your config.json file:
 
 **exposeReachability** (optional): If this value is set to true, the state of the locks is changed to "unknown" if the nello.io API is not reachable. It might be annoying to get HomeKit notifications that "the door is unlocked" (which is the content of the notification, even if the state of the door is "jammed" or "unknown").
 
+**webhookLocalPort** (optional): Port of the webhook for nello events. Default set to 11937.
+
+**webhookRetryInterval** (optional): This interval defines the timeout before the next try to register the webhook if the first time fails. Default set to 10 seconds.
+
+**videoDoorbell** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification with unlock button (The lock and the camera must be in the same room the see the unlock button). Default set to true.
+
+**snapshotImage** (optional): You can set an image which will be shown as camera output. Default set to a placeholder image.
+
 ## Implementation Details
 
 This plugin uses the HTTP API of nello.io for the following features:
 * Nello Authentication: logs the user with the specified username and password in
 * Nello Public API - /locations: Retrieves all locations of the user, which means all nello.io locks that are also visible to the account in the mobile app
 * Nello Public API - /locations/{locationId}/open: Opens the lock with the specified locationId and the user that is logged in
+* Video Doorbell - I used https://github.com/KhaosT/homebridge-camera-ffmpeg for implementation 
 
 ## Security
 
@@ -59,4 +74,3 @@ The following features will be implemented soon, stay tuned!
 Important: I'll add all of the new features to the configuration, so that you can enable and disable all of them (if you don't like a feature).
 
 * Doorbell Service: I'll implement the doorbell service, so that you get notifications when someone rings the bell.
-* Video Doorbell Service: When implementing the Video Doorbell Service, an "unlock" button appears in the notification, might be a nice feature.
