@@ -100,7 +100,7 @@ function NelloPlatform(log, config, api) {
                 if (data.action == "deny") {
                   platform.log("Someone rang the bell of the door with ID " + data.data.location_id + ".");
                 }
-                if (data.action == "swipe" || data.action == "tw" || data.action == "geo" || data.action == "deny") {
+                if (data.action == "tw" || data.action == "geo" || data.action == "deny") {
 
                   // Gets the corresponding accessory
                   var accessory = null;
