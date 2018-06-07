@@ -12,7 +12,7 @@ var platformName = "NelloPlatform";
  * Defines the export of the platform module.
  * @param homebridge The homebridge object that contains all classes, objects and functions for communicating with HomeKit.
  */
-module.exports = function(homebridge) {
+module.exports = function (homebridge) {
 
   // Gets the classes required for implementation of the plugin
   Accessory = homebridge.platformAccessory;
@@ -61,16 +61,16 @@ function NelloPlatform(log, config, api) {
     platform.api = api;
 
     // Subscribes to the event that is raised when homebrige finished loading cached accessories
-    platform.api.on('didFinishLaunching', function() {
+    platform.api.on('didFinishLaunching', function () {
       platform.log("Cached accessories loaded.");
 
       // Initially updates the locations to get the locks
-      platform.updateLocations(true, function() {
+      platform.updateLocations(true, function () {
 
         // Starts the timer for updating locations (i.e. adding and removing locks of the user)
         if (platform.config.locationUpdateInterval > 0) {
-          setInterval(function() {
-            platform.updateLocations(true, function() {});
+          setInterval(function () {
+            platform.updateLocations(true, function () { });
           }, platform.config.locationUpdateInterval);
         }
 
@@ -79,9 +79,9 @@ function NelloPlatform(log, config, api) {
 
           // Reads the body
           var body = [];
-          request.on('data', function(chunk) {
+          request.on('data', function (chunk) {
             body.push(chunk);
-          }).on('end', function() {
+          }).on('end', function () {
             body = Buffer.concat(body).toString();
 
             // Checks whether the body contains content
@@ -124,7 +124,7 @@ function NelloPlatform(log, config, api) {
 
                     // Leaves the lock unsecured for some time (the lock timeout)
                     lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.UNSECURED);
-                    setTimeout(function() {
+                    setTimeout(function () {
                       lockMechanismService.setCharacteristic(Characteristic.LockTargetState, Characteristic.LockTargetState.SECURED);
                       lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.SECURED);
                     }, platform.config.lockTimeout);
@@ -142,8 +142,8 @@ function NelloPlatform(log, config, api) {
         }).listen(platform.config.webhookLocalPort);
 
         // Defines the function for handling the tunnel to localhost
-        var tunnelManagement = function() {
-          localtunnel(platform.config.webhookLocalPort, function(error, tunnel) {
+        var tunnelManagement = function () {
+          localtunnel(platform.config.webhookLocalPort, function (error, tunnel) {
 
             // Checks for errors and retries to establish the tunnel
             if (error) {
@@ -156,9 +156,9 @@ function NelloPlatform(log, config, api) {
 
             // Updates the webhooks of all locations
             for (var i = 0; i < platform.locations.length; i++) {
-              platform.updateWebhook(platform.locations[i].location_id, tunnel.url, true, function() { });
+              platform.updateWebhook(platform.locations[i].location_id, tunnel.url, true, function () { });
             }
-          }).on('close', function() {
+          }).on('close', function () {
 
             // Reopens the tunnel
             if (!platform.config.webhookRetryInterval) {
@@ -182,7 +182,7 @@ function NelloPlatform(log, config, api) {
  * Signs the user in with the credentials provided in the configuration.
  * @param callback The callback function that gets a boolean value indicating success or failure.
  */
-NelloPlatform.prototype.signIn = function(callback) {
+NelloPlatform.prototype.signIn = function (callback) {
   var platform = this;
 
   // Validates the configuration
@@ -240,7 +240,7 @@ NelloPlatform.prototype.signIn = function(callback) {
 /**
  * Signs the user out. This is a helper method that clears the session. Is called everytime an API call fails.
  */
-NelloPlatform.prototype.signOut = function() {
+NelloPlatform.prototype.signOut = function () {
   var platform = this;
 
   // Clears the session information
@@ -254,7 +254,7 @@ NelloPlatform.prototype.signOut = function() {
  * @param retry Determines whether the platform should retry signing in and opening the lock if the first attempt fails.
  * @param callback The callback function that gets a boolean value indicating success or failure.
  */
-NelloPlatform.prototype.open = function(locationId, retry, callback) {
+NelloPlatform.prototype.open = function (locationId, retry, callback) {
   var platform = this;
 
   // Checks if the location still exists
@@ -334,7 +334,7 @@ NelloPlatform.prototype.open = function(locationId, retry, callback) {
  * @param retry Determines whether the platform should retry signing in and getting the locations if the first attempt fails.
  * @param callback The callback function that gets a boolean value indicating success or failure.
  */
-NelloPlatform.prototype.updateLocations = function(retry, callback) {
+NelloPlatform.prototype.updateLocations = function (retry, callback) {
   var platform = this;
 
   // Checks if the user is signed in 
@@ -434,7 +434,7 @@ NelloPlatform.prototype.updateLocations = function(retry, callback) {
  * @param retry Determines whether the platform should retry signing in and updating the webhook if the first attempt fails.
  * @param callback The callback function that gets a boolean value indicating success or failure.
  */
-NelloPlatform.prototype.updateWebhook = function(locationId, uri, retry, callback) {
+NelloPlatform.prototype.updateWebhook = function (locationId, uri, retry, callback) {
   var platform = this;
 
   // Checks if the location still exists
@@ -512,7 +512,7 @@ NelloPlatform.prototype.updateWebhook = function(locationId, uri, retry, callbac
 /**
  * Updates the reachability of all locks. This is based on the current sign in state.
  */
-NelloPlatform.prototype.updateReachability = function() {
+NelloPlatform.prototype.updateReachability = function () {
   var platform = this;
 
   // Updates the reachability
@@ -542,7 +542,7 @@ NelloPlatform.prototype.updateReachability = function() {
  * Adds a new accessory to the platform.
  * @param locationId The ID of the location for which the accessory is to be created.
  */
-NelloPlatform.prototype.addAccessory = function(locationId) {
+NelloPlatform.prototype.addAccessory = function (locationId) {
   var platform = this;
 
   // Gets the corresponding location object
@@ -585,7 +585,7 @@ NelloPlatform.prototype.addAccessory = function(locationId) {
 NelloPlatform.prototype.addCamera = function (accessory) {
   var platform = this;
 
-  if (!platform.config.videoDoorbell) {
+  if (!platform.config.videoDoorbell || accessory.videoDoorbell) {
     return;
   }
 
@@ -634,7 +634,7 @@ NelloPlatform.prototype.addCamera = function (accessory) {
  * Configures a previously cached accessory.
  * @param accessory The cached accessory.
  */
-NelloPlatform.prototype.configureAccessory = function(accessory) {
+NelloPlatform.prototype.configureAccessory = function (accessory) {
   var platform = this;
   platform.log("Configuring accessory with location ID " + accessory.context.locationId + ".");
 
@@ -653,17 +653,17 @@ NelloPlatform.prototype.configureAccessory = function(accessory) {
   accessory.context.reachable = true;
 
   // Handles setting the target lock state
-  lockMechanismService.getCharacteristic(Characteristic.LockTargetState).on('set', function(value, callback) {
+  lockMechanismService.getCharacteristic(Characteristic.LockTargetState).on('set', function (value, callback) {
     callback(null);
 
     // Actually opens the door
     if (value == Characteristic.LockTargetState.UNSECURED) {
-      platform.open(accessory.context.locationId, true, function(result) {
+      platform.open(accessory.context.locationId, true, function (result) {
         if (result) {
 
           // Leaves the lock unsecured for some time (the lock timeout)
           lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.UNSECURED);
-          setTimeout(function() {
+          setTimeout(function () {
             lockMechanismService.setCharacteristic(Characteristic.LockTargetState, Characteristic.LockTargetState.SECURED);
             lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.SECURED);
           }, platform.config.lockTimeout);
@@ -685,7 +685,7 @@ NelloPlatform.prototype.configureAccessory = function(accessory) {
  * Removes an accessory from the platform.
  * @param locationId The ID of the location for which the accessory is to be removed.
  */
-NelloPlatform.prototype.removeAccessory = function(locationId) {
+NelloPlatform.prototype.removeAccessory = function (locationId) {
   var platform = this;
 
   // Initializes the lists for remaining and removed accessories
