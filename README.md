@@ -31,6 +31,7 @@ Add the configuration to your config.json file:
             "exposeReachability": true,
             "webhookLocalPort": 11937,
             "webhookRetryInterval":10000,
+            "doorbell": false,
             "videoDoorbell": false,
             "snapshotImage": "http://via.placeholder.com/1280x720",
             "homekitUser": "Home Kit"
@@ -52,6 +53,8 @@ Add the configuration to your config.json file:
 **webhookLocalPort** (optional): Port of the webhook for nello events. Default set to 11937.
 
 **webhookRetryInterval** (optional): This interval defines the timeout before the next try to register the webhook if the first time fails. Default set to 10 seconds.
+
+**doorbell** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification. Default set to false.
 
 **videoDoorbell** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification with unlock button (The lock and the camera must be in the same room the see the unlock button). Default set to false.
 
@@ -78,4 +81,4 @@ This plugin uses the HTTP API of nello.io for the following features:
 The following features will be implemented soon, stay tuned!
 Important: I'll add all of the new features to the configuration, so that you can enable and disable all of them (if you don't like a feature).
 
-* Doorbell Service: I'll implement the doorbell service, so that you get notifications when someone rings the bell.
+* Any suggestions?

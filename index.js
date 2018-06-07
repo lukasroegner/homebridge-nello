@@ -585,7 +585,7 @@ NelloPlatform.prototype.addAccessory = function (locationId) {
 NelloPlatform.prototype.addCamera = function (accessory) {
   var platform = this;
 
-  if (!platform.config.videoDoorbell || accessory.videoDoorbell) {
+  if (!(platform.config.videoDoorbell || platform.config.doorbell) || accessory.videoDoorbell) {
     return;
   }
 
@@ -599,17 +599,20 @@ NelloPlatform.prototype.addCamera = function (accessory) {
     callback(null, 0);
   });
 
-  // Setup and configure the camera services
-  var videoDoorbellSource = new FFMPEG(hap, {
-    "videoConfig": {
-      "source": "-re -i ",
-      "stillImageSource": "-i " + platform.config.snapshotImage,
-      "maxWidth": 1280,
-      "maxHeight": 720,
-      "maxFPS": 30
-    }
-  }, platform.log, 'ffmpeg');
-  videodoorbellAccessory.configureCameraSource(videoDoorbellSource);
+  if (platform.config.videoDoorbell) {
+    // Setup and configure the camera services
+    var videoDoorbellSource = new FFMPEG(hap, {
+      "videoConfig": {
+        "source": "-re -i ",
+        "stillImageSource": "-i " + platform.config.snapshotImage,
+        "maxWidth": 1280,
+        "maxHeight": 720,
+        "maxFPS": 30
+      }
+    }, platform.log, 'ffmpeg');
+
+    videodoorbellAccessory.configureCameraSource(videoDoorbellSource);
+  }
 
   // Setup HomeKit doorbell service
   videodoorbellAccessory.addService(primaryService);
