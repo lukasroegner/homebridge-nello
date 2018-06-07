@@ -100,20 +100,22 @@ function NelloPlatform(log, config, api) {
                 if (data.action == "deny") {
                   platform.log("Someone rang the bell of the door with ID " + data.data.location_id + ".");
                 }
-                if (data.action == "tw" || data.action == "geo" || data.action == "deny") {
 
-                  // Gets the corresponding accessory
-                  var accessory = null;
-                  for (var i = 0; i < platform.accessories.length; i++) {
-                    if (platform.accessories[i].context.locationId == data.data.location_id) {
-                      accessory = platform.accessories[i];
-                    }
+                // Gets the corresponding accessory
+                var accessory = null;
+                for (var i = 0; i < platform.accessories.length; i++) {
+                  if (platform.accessories[i].context.locationId == data.data.location_id) {
+                    accessory = platform.accessories[i];
                   }
-                  if (accessory) {
-                    if (data.action == "deny") {
-                      if (accessory.videoDoorbell) {
-                        accessory.videoDoorbell.getCharacteristic(Characteristic.ProgrammableSwitchEvent).setValue(0);
-                      }
+                }
+                if (accessory) {
+                  if (data.action == "deny") {
+                    if (accessory.videoDoorbell) {
+                      accessory.videoDoorbell.getCharacteristic(Characteristic.ProgrammableSwitchEvent).setValue(0);
+                    }
+                  } else if (data.action == "tw" || data.action == "geo" || data.action == "swipe") {
+
+                    if (data.action == "swipe" && platform.config.homekitUser == data.data.name) {
                       return;
                     }
 
@@ -126,9 +128,9 @@ function NelloPlatform(log, config, api) {
                       lockMechanismService.setCharacteristic(Characteristic.LockTargetState, Characteristic.LockTargetState.SECURED);
                       lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.SECURED);
                     }, platform.config.lockTimeout);
-                  } else {
-                    platform.log("Fake update of lock with ID " + data.data.location_id + " failed. The lock is not available anymore.");
                   }
+                } else {
+                  platform.log("Fake update of lock with ID " + data.data.location_id + " failed. The lock is not available anymore.");
                 }
               }
             }

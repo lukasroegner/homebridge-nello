@@ -32,7 +32,8 @@ Add the configuration to your config.json file:
             "webhookLocalPort": 11937,
             "webhookRetryInterval":10000,
             "videoDoorbell": false,
-            "snapshotImage": "http://via.placeholder.com/1280x720"
+            "snapshotImage": "http://via.placeholder.com/1280x720",
+            "homekitUser": "Home Kit"
         }
     ]
 }
@@ -55,6 +56,8 @@ Add the configuration to your config.json file:
 **videoDoorbell** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification with unlock button (The lock and the camera must be in the same room the see the unlock button). Default set to false.
 
 **snapshotImage** (optional): You can set an image which will be shown as camera output. Default set to a placeholder image.
+
+**homekitUser** (optional): I recommend to create another account in the nello app for this plugin. In order to prevent duplicated notification you should enter the user name of this HomeKit account. Default value is undefined.
 
 ## Implementation Details
 
