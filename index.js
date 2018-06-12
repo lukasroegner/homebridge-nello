@@ -32,6 +32,11 @@ module.exports = function(homebridge) {
 function NelloPlatform(log, config, api) {
   var platform = this;
 
+  // Checks whether a configuration is provided, otherwise the plugin should not be initialized
+  if (!config) {
+    return;
+  }
+
   // Defines the variables that are used throughout the platform
   platform.log = log;
   platform.config = config;
