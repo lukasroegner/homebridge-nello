@@ -22,11 +22,11 @@ module.exports = function (accessory) {
         // Setup and configure the camera services
         var videoDoorbellSource = new FFMPEG(hap, {
             "videoConfig": {
-                "source": "-re -i ",
-                "stillImageSource": "-i " + platform.config.snapshotImage,
-                "maxWidth": 1280,
-                "maxHeight": 720,
-                "maxFPS": 30
+                "source": platform.config.video.stream,
+                "stillImageSource": platform.config.video.snapshotImage,
+                "maxWidth": platform.config.video.maxWidth,
+                "maxHeight": platform.config.video.maxHeight,
+                "maxFPS": platform.config.video.maxFPS
             }
         }, platform.log, 'ffmpeg');
 
@@ -44,7 +44,7 @@ module.exports = function (accessory) {
 
     // Identify
     videodoorbellAccessory.on('identify', function (a, callback) {
-        primaryService.getCharacteristic(Characteristic.ProgrammableSwitchEvent).setValue(0);
+        // primaryService.getCharacteristic(Characteristic.ProgrammableSwitchEvent).setValue(0);
         callback();
     });
 

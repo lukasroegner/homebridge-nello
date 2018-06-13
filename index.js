@@ -46,7 +46,12 @@ function NelloPlatform(log, config, api) {
   platform.config.lockTimeout = platform.config.lockTimeout || 5000;
   platform.config.locationUpdateInterval = platform.config.locationUpdateInterval == 0 ? 0 : (platform.config.locationUpdateInterval || 3600000);
   platform.config.exposeReachability = platform.config.exposeReachability;
-  platform.config.snapshotImage = platform.config.snapshotImage || "http://via.placeholder.com/1280x720";
+  platform.config.video = platform.config.video || {};
+  platform.config.video.stream = platform.config.video.stream || "-re -i";
+  platform.config.video.snapshotImage = platform.config.video.snapshotImage || "-i http://via.placeholder.com/1280x720";
+  platform.config.video.maxWidth = platform.config.video.maxWidth || 1280;
+  platform.config.video.maxHeight = platform.config.video.maxHeight || 720;
+  platform.config.video.maxFPS = platform.config.video.maxFPS || 30;
 
   // Checks whether the API object is available
   if (api) {
@@ -70,7 +75,7 @@ function NelloPlatform(log, config, api) {
         }
 
         //Connect to backend
-        platform.connectWebHook();
+        platform.connectWebhook();
       });
     });
   } else {
@@ -111,7 +116,7 @@ NelloPlatform.prototype.updateLocations = require('./functions/updateLocations')
  * @param retry Determines whether the platform should retry signing in and updating the webhook if the first attempt fails.
  * @param callback The callback function that gets a boolean value indicating success or failure.
  */
-NelloPlatform.prototype.updateWebhook = require('./functions/updateWekhook');
+NelloPlatform.prototype.updateWebhook = require('./functions/updateWebhook');
 
 /**
  * Updates the reachability of all locks. This is based on the current sign in state.
@@ -133,7 +138,7 @@ NelloPlatform.prototype.addCamera = require('./functions/addCamera');
 /**
  * Opens connection to the webhook backend.
  */
-NelloPlatform.prototype.connectWebHook = require('./functions/connectWebHook');
+NelloPlatform.prototype.connectWebhook = require('./functions/connectWebhook');
 
 /**
  * Configures a previously cached accessory.

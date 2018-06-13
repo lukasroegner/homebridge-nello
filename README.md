@@ -4,7 +4,7 @@ This project contains a homebridge plugin for the smart intercom nello.io. All y
 
 ## Installation
 
-You can create a new dedicated nello.io account so that your personal name is not shown in the nello activity log for actions that HomeKit executes. However, you can also use your own credentials for the plugin.
+I recommend you to create a new dedicated nello.io account in order to prevent doubled notification if you open the door over HomeKit. It's also possible to use your own account with this plugin.
 
 Install the plugin via npm:
 
@@ -29,11 +29,15 @@ Add the configuration to your config.json file:
             "lockTimeout": 5000,
             "locationUpdateInterval": 3600000,
             "exposeReachability": true,
-            "webhookLocalPort": 11937,
-            "webhookRetryInterval":10000,
             "doorbell": false,
-            "videoDoorbell": false,
-            "snapshotImage": "http://via.placeholder.com/1280x720",
+            "video": {
+                "enabled": false,
+                "stream": "-re -i <your-url>",
+                "snapshotImage": "http://via.placeholder.com/1280x720",
+                "maxWidth": 1280,
+                "maxHeight": 720,
+                "maxFPS": 30
+            },
             "homekitUser": "Home Kit"
         }
     ]
@@ -50,15 +54,21 @@ Add the configuration to your config.json file:
 
 **exposeReachability** (optional): If this value is set to true, the state of the locks is changed to "unknown" if the nello.io API is not reachable. It might be annoying to get HomeKit notifications that "the door is unlocked" (which is the content of the notification, even if the state of the door is "jammed" or "unknown").
 
-**webhookLocalPort** (optional): Port of the webhook for nello events. Default set to 11937.
-
-**webhookRetryInterval** (optional): This interval defines the timeout before the next try to register the webhook if the first time fails. Default set to 10 seconds.
-
 **doorbell** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification. Default set to false.
 
-**videoDoorbell** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification with unlock button (The lock and the camera must be in the same room the see the unlock button). Default set to false.
+**video Config** (optional): Over this part you can configure a camera for HomeKit.
 
-**snapshotImage** (optional): You can set an image which will be shown as camera output. Default set to a placeholder image.
+**video.enabled** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification with unlock button (The lock and the camera must be in the same room to see the unlock button). Default set to false.
+
+**video.stream** (optional): Enter a stream url of e.g. your RaspberryPi camera or leave it blank if you don't have one.
+
+**video.snapshotImage** (optional): You can set an image which will be shown as camera output. Default set to a placeholder image.
+
+**video.maxWidth** (optional): Maximum width of the stream. Default set 1280px.
+
+**video.maxHeight** (optional): Maximum height of the stream. Default set 720px.
+
+**video.maxFPS** (optional): Maximum frame per seconds of the stream. Default set 30 FPS.
 
 **homekitUser** (optional): I recommend to create another account in the nello app for this plugin. In order to prevent duplicated notification you should enter the user name of this HomeKit account. Default value is undefined.
 
