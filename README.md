@@ -30,8 +30,8 @@ Add the configuration to your config.json file:
             "locationUpdateInterval": 3600000,
             "exposeReachability": true,
             "doorbell": false,
+            "videoDoorbell": false,
             "video": {
-                "enabled": false,
                 "stream": "-re -i <your-url>",
                 "snapshotImage": "http://via.placeholder.com/1280x720",
                 "maxWidth": 1280,
@@ -56,9 +56,9 @@ Add the configuration to your config.json file:
 
 **doorbell** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification. Default set to false.
 
-**video Config** (optional): Over this part you can configure a camera for HomeKit.
+**videoDoorbell** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification with unlock button (The lock and the camera must be in the same room to see the unlock button). Default set to false.
 
-**video.enabled** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification with unlock button (The lock and the camera must be in the same room to see the unlock button). Default set to false.
+**video Config** (optional): Over this part you can configure a camera for HomeKit.
 
 **video.stream** (optional): Enter a stream url of e.g. your RaspberryPi camera or leave it blank if you don't have one.
 
