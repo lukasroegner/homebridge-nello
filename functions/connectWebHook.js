@@ -19,7 +19,6 @@ module.exports = function () {
         }
     });
     socket.on('call', function (data) {
-        console.log(data);
         if (data) {
             if (data.action) {
                 if (data.action == "swipe") {
