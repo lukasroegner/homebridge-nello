@@ -32,6 +32,11 @@ function NelloPlatform(log, config, api) {
   platform.UUIDGen = homebridgeObj.hap.uuid;
   platform.hap = homebridgeObj.hap;
 
+  // Checks whether a configuration is provided, otherwise the plugin should not be initialized
+  if (!config) {
+    return;
+  }
+
   // Defines the variables that are used throughout the platform
   platform.log = log;
   platform.config = config;
