@@ -4,7 +4,7 @@ This project contains a homebridge plugin for the smart intercom nello.io. All y
 
 ## Installation
 
-I recommend you to create a new dedicated nello.io account in order to prevent doubled notification if you open the door over HomeKit. It's also possible to use your own account with this plugin.
+It's recommended to create a new dedicated nello.io account in order to prevent doubled notification if you open the door over HomeKit. It's also possible to use your own account with this plugin.
 
 Install the plugin via npm:
 
@@ -70,7 +70,7 @@ Add the configuration to your config.json file:
 
 **video.maxFPS** (optional): Maximum frame per seconds of the stream. Default set 30 FPS.
 
-**homekitUser** (optional): I recommend to create another account in the nello app for this plugin. In order to prevent duplicated notification you should enter the user name of this HomeKit account. Default value is undefined.
+**homekitUser** (optional): It's recommended to create another account in the nello app for this plugin. In order to prevent duplicated notification you should enter the user name of this HomeKit account. Default value is undefined.
 
 ## Implementation Details
 
@@ -78,17 +78,18 @@ This plugin uses the HTTP API of nello.io for the following features:
 * Nello Authentication: logs the user with the specified username and password in
 * Nello Public API - /locations: Retrieves all locations of the user, which means all nello.io locks that are also visible to the account in the mobile app
 * Nello Public API - /locations/{locationId}/open: Opens the lock with the specified locationId and the user that is logged in
-* Video Doorbell - I used https://github.com/KhaosT/homebridge-camera-ffmpeg for implementation 
+* Video Doorbell - This plugin uses https://github.com/KhaosT/homebridge-camera-ffmpeg for implementation 
 
 ## Security
 
 * All calls to the nello.io API are being sent via HTTPS. 
 * The password of the user account that is used by this plugin has to be specified in the `config.json` on the PC/Mac/Raspberry running homebridge. Therefore, please make sure that nobody can access this device within your local network without permission. 
 * In the Apple Home app, a lock can be easily unlocked with a single touch onto the icon. Please be careful not to open the door unintentionally.
+* The webhook uses a relay service which is hosted by @us09alex. You can find the source code of the service here: https://github.com/us09alex/nello-backend
 
 ## Upcoming Features
 
 The following features will be implemented soon, stay tuned!
-Important: I'll add all of the new features to the configuration, so that you can enable and disable all of them (if you don't like a feature).
+Important: All new features will be added to the configuration, so that you can enable and disable all of them (if you don't like a feature).
 
 * Any suggestions?
