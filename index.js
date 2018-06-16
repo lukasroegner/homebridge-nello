@@ -52,7 +52,7 @@ function NelloPlatform(log, config, api) {
   platform.config.locationUpdateInterval = platform.config.locationUpdateInterval == 0 ? 0 : (platform.config.locationUpdateInterval || 3600000);
   platform.config.exposeReachability = platform.config.exposeReachability;
   platform.config.video = platform.config.video || {};
-  platform.config.video.stream = platform.config.video.stream.replace('<your-url>', '') || "-re -i";
+  platform.config.video.stream = platform.config.video.stream || "-re -i";
   platform.config.video.snapshotImage = platform.config.video.snapshotImage || "http://via.placeholder.com/1280x720";
   platform.config.video.maxWidth = platform.config.video.maxWidth || 1280;
   platform.config.video.maxHeight = platform.config.video.maxHeight || 720;
