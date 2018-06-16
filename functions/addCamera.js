@@ -23,7 +23,7 @@ module.exports = function (accessory) {
         var videoDoorbellSource = new FFMPEG(hap, {
             "videoConfig": {
                 "source": platform.config.video.stream,
-                "stillImageSource": platform.config.video.snapshotImage,
+                "stillImageSource": "-i " + platform.config.video.snapshotImage,
                 "maxWidth": platform.config.video.maxWidth,
                 "maxHeight": platform.config.video.maxHeight,
                 "maxFPS": platform.config.video.maxFPS
