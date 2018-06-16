@@ -12,6 +12,12 @@ Install the plugin via npm:
 npm install homebridge-nello -g
 ```
 
+You need to install ffmpeg in order to see the unlock button in the notification.
+```bash
+sudo apt-get install ffmpeg
+```
+General information about ffmpeg can be found here https://github.com/KhaosT/homebridge-camera-ffmpeg/wiki)
+
 You need to install ffmpeg in order to see the unlock button in the notification (See here: https://github.com/KhaosT/homebridge-camera-ffmpeg/wiki)
 
 When you want to use the video doorbell service you must add a camera accessory over the "Add Accessory" menu and enter the same code you have defined for your Homebridge.
