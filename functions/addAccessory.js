@@ -33,7 +33,7 @@ module.exports = function (locationId) {
     platform.configureAccessory(accessory);
 
     // Adds the accessory
-    platform.api.registerPlatformAccessories(pluginName, platformName, [accessory]);
+    platform.api.registerPlatformAccessories(platform.pluginName, platform.platformName, [accessory]);
     platform.log("Accessory for location with ID " + locationId + " added.");
 
     platform.addCamera(accessory);

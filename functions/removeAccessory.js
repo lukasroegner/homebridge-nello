@@ -20,7 +20,7 @@ module.exports = function (locationId) {
 
     // Removes the accessories
     if (removedAccessories.length > 0) {
-        platform.api.unregisterPlatformAccessories(pluginName, platformName, removedAccessories);
+        platform.api.unregisterPlatformAccessories(platform.pluginName, platform.platformName, removedAccessories);
         platform.accessories = remainingAccessories;
         platform.log(removedAccessories.length + " accessories removed.");
     }

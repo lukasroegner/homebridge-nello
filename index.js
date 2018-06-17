@@ -31,6 +31,8 @@ function NelloPlatform(log, config, api) {
   platform.Characteristic = homebridgeObj.hap.Characteristic;
   platform.UUIDGen = homebridgeObj.hap.uuid;
   platform.hap = homebridgeObj.hap;
+  platform.pluginName = pluginName;
+  platform.platformName = platformName;
 
   // Checks whether a configuration is provided, otherwise the plugin should not be initialized
   if (!config) {
