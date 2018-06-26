@@ -20,6 +20,7 @@ General information about ffmpeg can be found here https://github.com/KhaosT/hom
 
 When you want to use the video doorbell service you must add a camera accessory over the "Add Accessory" menu and enter the same code you have defined for your Homebridge.
 
+### FFMPEG Stream
 Add the configuration to your config.json file:
 
 ```json
@@ -48,6 +49,34 @@ Add the configuration to your config.json file:
 }
 ```
 
+### Raspberry Pi Camera Module V2.1
+Add the configuration to your config.json file:
+
+```json
+{
+    "platforms": [
+        {
+            "platform" : "NelloPlatform",
+            "name" : "nello.io",
+            "username": "<your-username>",
+            "password": "<your-password>",
+            "lockTimeout": 5000,
+            "locationUpdateInterval": 3600000,
+            "exposeReachability": true,
+            "doorbell": false,
+            "videoDoorbell": false,
+            "video": {
+                "raspberryPiCamera": true,
+                "rotate": 0,
+                "verticalFlip": false,
+                "horizontalFlip": false
+            },
+            "homekitUser": "Home Kit"
+        }
+    ]
+}
+```
+
 **username**: the email address of your nello.io account
 
 **password**: the password of your account
@@ -62,7 +91,7 @@ Add the configuration to your config.json file:
 
 **videoDoorbell** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification with unlock button (The lock and the camera must be in the same room to see the unlock button). Default set to false.
 
-**video Config** (optional): Over this part you can configure a camera for HomeKit.
+**video Config (FFMPEG)** (optional): Over this part you can configure a camera for HomeKit.
 
 **video.stream** (optional): Enter a stream url of e.g. your RaspberryPi camera or leave it blank if you don't have one.
 
@@ -73,6 +102,16 @@ Add the configuration to your config.json file:
 **video.maxHeight** (optional): Maximum height of the stream. Default set 720px.
 
 **video.maxFPS** (optional): Maximum frame per seconds of the stream. Default set 30 FPS.
+
+**video Config (Raspberry Pi Camera Module V2.1)**
+
+**video.raspberryPiCamera** (must be set to true if you want to use this feature): If set to true the plugin uses a video configuration adjusted for the camera module. Default: false Credits: https://github.com/moritzmhmk/homebridge-camera-rpi
+
+**video.rotate** (optional, only with raspberryPiCamera set to true): Rotate the video stream (in degrees) Default: 0.
+
+**video.verticalFlip** (optional, only with raspberryPiCamera set to true): Flip the stream vertically. Default: false.
+
+**video.horizontalFlip** (optional, only with raspberryPiCamera set to true): Flip the stream horitzontally. Default: false.
 
 **homekitUser** (optional): It's recommended to create another account in the nello app for this plugin. In order to prevent duplicated notification you should enter the user name of this HomeKit account. Default value is undefined.
 

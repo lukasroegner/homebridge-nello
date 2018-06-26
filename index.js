@@ -59,6 +59,8 @@ function NelloPlatform(log, config, api) {
   platform.config.video.maxWidth = platform.config.video.maxWidth || 1280;
   platform.config.video.maxHeight = platform.config.video.maxHeight || 720;
   platform.config.video.maxFPS = platform.config.video.maxFPS || 30;
+  platform.config.video.vcodec = platform.config.video.vcodec || "h264_omx";
+  platform.config.video.rotate = platform.config.video.rotate || 0;
 
   // Checks whether the API object is available
   if (api) {
