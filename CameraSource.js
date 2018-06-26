@@ -60,6 +60,7 @@ function Camera(hap, conf) {
 }
 
 Camera.prototype.handleSnapshotRequest = function (request, callback) {
+    const self = this;
     let ffmpegCommand = `\
 -f video4linux2 -input_format mjpeg -video_size ${request.width}x${request.height} -i /dev/video0 \
 -vframes 1 -f mjpeg -`
@@ -69,7 +70,7 @@ Camera.prototype.handleSnapshotRequest = function (request, callback) {
     let ffmpeg = spawn('ffmpeg', ffmpegCommand.split(' '), { env: process.env })
     var imageBuffer = Buffer.alloc(0)
     ffmpeg.stdout.on('data', function (data) { imageBuffer = Buffer.concat([imageBuffer, data]) })
-    ffmpeg.stderr.on('data', function (data) { if (this.conf.debug) console.log('ffmpeg', String(data)) })
+    ffmpeg.stderr.on('data', function (data) { if (self.conf.debug) console.log('ffmpeg', String(data)) })
     ffmpeg.on('close', function (code) { callback(null, imageBuffer) })
 }
 
@@ -159,6 +160,7 @@ Camera.prototype.prepareStream = function (request, callback) {
 }
 
 Camera.prototype.handleStreamRequest = function (request) {
+    const self = this;
     var sessionID = request['sessionID']
     var requestType = request['type']
     if (!sessionID) return
@@ -193,7 +195,7 @@ srtp://${address}:${port}?rtcpport=${port}&localrtcpport=${port}&pkt_size=1378`
             console.log(ffmpegCommand)
         }
         let ffmpeg = spawn('ffmpeg', ffmpegCommand.split(' '), { env: process.env })
-        ffmpeg.stderr.on('data', function (data) { if (this.conf.debug) console.log('ffmpeg', String(data)) })
+        ffmpeg.stderr.on('data', function (data) { if (self.conf.debug) console.log('ffmpeg', String(data)) })
         this.ongoingSessions[sessionIdentifier] = ffmpeg
 
         delete this.pendingSessions[sessionIdentifier]
