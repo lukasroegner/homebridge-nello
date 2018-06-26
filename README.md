@@ -65,8 +65,9 @@ Add the configuration to your config.json file:
             "exposeReachability": true,
             "doorbell": false,
             "videoDoorbell": false,
+            "raspberryPiCamera": true,
             "video": {
-                "raspberryPiCamera": true,
+                "debug": false,
                 "rotate": 0,
                 "verticalFlip": false,
                 "horizontalFlip": false
@@ -91,6 +92,8 @@ Add the configuration to your config.json file:
 
 **videoDoorbell** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification with unlock button (The lock and the camera must be in the same room to see the unlock button). Default set to false.
 
+**raspberryPiCamera** (must be set to true if you want to use this feature): If set to true the plugin uses a video configuration adjusted for the camera module. Default: false Credits: https://github.com/moritzmhmk/homebridge-camera-rpi
+
 **video Config (FFMPEG)** (optional): Over this part you can configure a camera for HomeKit.
 
 **video.stream** (optional): Enter a stream url of e.g. your RaspberryPi camera or leave it blank if you don't have one.
@@ -105,8 +108,7 @@ Add the configuration to your config.json file:
 
 **video Config (Raspberry Pi Camera Module V2.1)**
 
-**video.raspberryPiCamera** (must be set to true if you want to use this feature): If set to true the plugin uses a video configuration adjusted for the camera module. Default: false Credits: https://github.com/moritzmhmk/homebridge-camera-rpi
-
+**video.debug** (optional, only with raspberryPiCamera set to true): If set to true you will see all messages from ffmpeg.
 **video.rotate** (optional, only with raspberryPiCamera set to true): Rotate the video stream (in degrees) Default: 0.
 
 **video.verticalFlip** (optional, only with raspberryPiCamera set to true): Flip the stream vertically. Default: false.
