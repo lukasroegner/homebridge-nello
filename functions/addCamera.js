@@ -1,4 +1,5 @@
 const FFMPEG = require('../ffmpeg').FFMPEG;
+const CameraSource = require('../CameraSource');
 
 module.exports = function (accessory) {
     const platform = this;
@@ -20,15 +21,22 @@ module.exports = function (accessory) {
 
     if (platform.config.videoDoorbell) {
         // Setup and configure the camera services
-        var videoDoorbellSource = new FFMPEG(hap, {
-            "videoConfig": {
-                "source": platform.config.video.stream.replace('<your-url>', ''),
-                "stillImageSource": "-i " + platform.config.video.snapshotImage,
-                "maxWidth": platform.config.video.maxWidth,
-                "maxHeight": platform.config.video.maxHeight,
-                "maxFPS": platform.config.video.maxFPS
-            }
-        }, platform.log, 'ffmpeg');
+        var videoDoorbellSource = null;
+
+        if (platform.config.raspberryPiCamera) {
+            videoDoorbellSource = new CameraSource(hap, platform.config.video);
+        } else {
+            videoDoorbellSource = new FFMPEG(hap, {
+                videoConfig: {
+                    source: platform.config.video.stream.replace('<your-url>', ''),
+                    stillImageSource: (platform.config.video.snapshotImage.startsWith('http') ? '-i ' : '') + platform.config.video.snapshotImage,
+                    maxWidth: platform.config.video.maxWidth,
+                    maxHeight: platform.config.video.maxHeight,
+                    maxFPS: platform.config.video.maxFPS,
+                    vcodec: platform.config.video.vcodec
+                }
+            }, platform.log, 'ffmpeg');
+        }
 
         videodoorbellAccessory.configureCameraSource(videoDoorbellSource);
     }
