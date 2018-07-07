@@ -41,7 +41,8 @@ Add the configuration to your config.json file:
                 "snapshotImage": "http://via.placeholder.com/1280x720",
                 "maxWidth": 1280,
                 "maxHeight": 720,
-                "maxFPS": 30
+                "maxFPS": 30,
+                "vcodec": "h264_omx"
             },
             "homekitUser": "Home Kit"
         }
@@ -105,6 +106,8 @@ Add the configuration to your config.json file:
 **video.maxHeight** (optional): Maximum height of the stream. Default set 720px.
 
 **video.maxFPS** (optional): Maximum frame per seconds of the stream. Default set 30 FPS.
+
+**video.vcodec** (optional): Set a video codec for ffmpeg. Default set to h264_omx.
 
 **video Config (Raspberry Pi Camera Module V2.1)**
 
