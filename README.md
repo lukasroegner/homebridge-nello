@@ -145,7 +145,7 @@ This plugin uses the HTTP API of nello.io for the following features:
 * All calls to the nello.io API are being sent via HTTPS. 
 * The password of the user account that is used by this plugin has to be specified in the `config.json` on the PC/Mac/Raspberry running homebridge. Therefore, please make sure that nobody can access this device within your local network without permission. 
 * In the Apple Home app, a lock can be easily unlocked with a single touch onto the icon. Please be careful not to open the door unintentionally.
-* The webhook uses a relay service which is hosted by @us09alex. You can find the source code of the service here: https://github.com/us09alex/nello-backend
+* The webhook uses a relay service which is hosted by @AlexanderBabel. You can find the source code of the service here: https://github.com/AlexanderBabel/nello-backend
 
 ## Upcoming Features
 
