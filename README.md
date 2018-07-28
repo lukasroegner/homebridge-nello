@@ -34,6 +34,9 @@ Add the configuration to your config.json file:
             "lockTimeout": 5000,
             "locationUpdateInterval": 3600000,
             "exposeReachability": true,
+            "motionSensor": false,
+            "motionTimeout": 5000,
+            "alwaysOpenSwitch": false,
             "doorbell": false,
             "videoDoorbell": false,
             "video": {
@@ -64,6 +67,9 @@ Add the configuration to your config.json file:
             "lockTimeout": 5000,
             "locationUpdateInterval": 3600000,
             "exposeReachability": true,
+            "motionSensor": false,
+            "motionTimeout": 5000,
+            "alwaysOpenSwitch": false,
             "doorbell": false,
             "videoDoorbell": false,
             "raspberryPiCamera": true,
@@ -88,6 +94,12 @@ Add the configuration to your config.json file:
 **locationUpdateInterval** (optional): interval in milliseconds, in which the locks of a user are updated (i.e. new locks are added as accessories, locks that are no longer under control of the user are removed). This interval is also used to update the reachability of the locks (if the nello API is not reachable the locks are marked as "not rechable"). Default value is every hour (3600 * 1000). Use 0 to disable continuous updates.
 
 **exposeReachability** (optional): If this value is set to true, the state of the locks is changed to "unknown" if the nello.io API is not reachable. It might be annoying to get HomeKit notifications that "the door is unlocked" (which is the content of the notification, even if the state of the door is "jammed" or "unknown").
+
+**motionSensor** (optional): If this value is set to true, a motion sensor will be exposed to HomeKit and trigger every time someone rings the door.
+
+**motionTimeout** (optional): timeout in milliseconds, after which the motion sensor will be displayed as clear after some rang the door. Default value is 5000.
+
+**alwaysOpenSwitch** (optional): If this value is set to true, a switch will be exposed to HomeKit. If the switch is enabled through HomeKit, every time someone rings the door and Nello will not open the door automatically, this plugin will do it.
 
 **doorbell** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification. Default set to false.
 
