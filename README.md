@@ -64,7 +64,6 @@ If you have a doorbell with srtp support you can use this configuration.
             "motionSensor": false,
             "motionTimeout": 5000,
             "alwaysOpenSwitch": false,
-            "doorbell": false,
             "videoDoorbell": false,
             "video": {
                 "stream": "-re -i <your-url>",
@@ -97,8 +96,6 @@ If you're using a Raspberry Pi for HomeBridge and have a connected Camera Module
             "motionSensor": false,
             "motionTimeout": 5000,
             "alwaysOpenSwitch": false,
-            "doorbell": false,
-            "videoDoorbell": false,
             "raspberryPiCamera": true,
             "video": {
                 "debug": false,
@@ -122,13 +119,13 @@ If you're using a Raspberry Pi for HomeBridge and have a connected Camera Module
 
 **exposeReachability** (optional): If this value is set to true, the state of the locks is changed to "unknown" if the nello.io API is not reachable. It might be annoying to get HomeKit notifications that "the door is unlocked" (which is the content of the notification, even if the state of the door is "jammed" or "unknown").
 
-**motionSensor** (optional): If this value is set to true, a motion sensor will be exposed to HomeKit and trigger every time someone rings the door.
+**motionSensor** (optional): If this value is set to true, a motion sensor will be exposed to HomeKit and trigger every time someone rings. (Can be used for HomeKit automations and notifications.)
 
-**motionTimeout** (optional): timeout in milliseconds, after which the motion sensor will be displayed as clear after some rang the door. Default value is 5000.
+**motionTimeout** (optional): timeout in milliseconds, after which the motion sensor will be displayed as clear after some rang. Default value is 5000.
 
-**alwaysOpenSwitch** (optional): If this value is set to true, a switch will be exposed to HomeKit. If the switch is enabled through HomeKit, every time someone rings the door and Nello will not open the door automatically, this plugin will do it.
+**alwaysOpenSwitch** (optional): If this value is set to true, a switch will be exposed to HomeKit. If the switch is enabled through HomeKit, every time someone rings and Nello will not open the door automatically, this plugin will do it. (Can be used for HomeKit automations.)
 
-**doorbell** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification. Default set to false.
+**doorbell** (optional): **No longer available. Replaced with motionSensor**
 
 **videoDoorbell** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification with unlock button (The lock and the camera must be in the same room to see the unlock button). Default set to false.
 
