@@ -1,10 +1,10 @@
 # homebridge-nello
 
-This project contains a homebridge plugin for the smart intercom nello.io. All your nello.io locks are dynamically added to HomeKit as accessories with the LockMechanism service.
+This project is a homebridge plugin for the smart intercom nello.io. All your nello.io locks are dynamically added to HomeKit as lock accessories.
 
 ## Installation
 
-It's recommended to create a new dedicated nello.io account in order to prevent doubled notification if you open the door over HomeKit. It's also possible to use your own account with this plugin.
+It's recommended to create a new dedicated nello.io account in order to prevent duplicated notifications if you open the door over the Home app. It's also possible to use your own account with this plugin.
 
 Install the plugin via npm:
 
@@ -12,21 +12,8 @@ Install the plugin via npm:
 npm install homebridge-nello -g
 ```
 
-
-There are multiple ways to get notifications if someone rings at your door:
-### You don't want to use a camera or don't have one
-It's also possible to use a motion sensor instead of a camera accessory. Just set "motionSensor" to true and your're done.
-
-
-### You have a doorbell with srtp support
-If this is the case just take a look at the first configuration and add the stream and snapshot url and you're ready to go. You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the installation part.
-
-
-### Raspberry Pi Camera Module V2.1
-If you're using a Raspberry Pi for HomeBridge and have a connected Camera Module, you can use this camera as a doorbell for notifictions. Just take a look at the special config below the FFMPEG config. You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the installation part.
-
-
 ### Optional: Installation of FFMPEG
+**Only if you want to use a camera accessory. More information in the Configuration section.**
 You can install the default package or complie it yourself if you have a special case to fit.
 ```bash
 sudo apt-get install ffmpeg
@@ -36,9 +23,10 @@ General information about ffmpeg can be found here https://github.com/KhaosT/hom
 Due to HomeKit limitations it's requiered to add the camera separately. Just tap on the plus button in the top right croner, choose "Add Accessory" and click on "Don't Have a Code of Can't Scan?". In the next view you should see the camera accessory and can tap it in order the add it to the Home app. The PIN is the same as of your HomeBridge instance.
 
 ## Configuration
-There are two different kinds of configurations. The first one is the default one and the second one is a configuration specialized for the Raspberry Pi Camera Module V2.1.
+There are multiple ways to get notifications if someone rings at your door:
 
 ### Default configuration (with a motion sensor for ring notifications)
+If you don't want to use a camera or don't have one this is the configuration for you.
 ```json
 {
     "platforms": [
@@ -60,6 +48,8 @@ There are two different kinds of configurations. The first one is the default on
 ```
 
 ### FFMPEG Stream (from a strp source)
+If you have a doorbell with srtp support you can use this configuration.
+**You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the Installation part.**
 ```json
 {
     "platforms": [
@@ -91,6 +81,8 @@ There are two different kinds of configurations. The first one is the default on
 ```
 
 ### Raspberry Pi Camera Module V2.1
+If you're using a Raspberry Pi for HomeBridge and have a connected Camera Module, you can use this camera as a doorbell for notifictions.
+**You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the Installation part.**
 ```json
 {
     "platforms": [
@@ -140,7 +132,7 @@ There are two different kinds of configurations. The first one is the default on
 
 **videoDoorbell** (optional): If this value is set to true, a camera can be added to HomeKit (as extra accessory) and when someone rings at your door you will get a push notification with unlock button (The lock and the camera must be in the same room to see the unlock button). Default set to false.
 
-**raspberryPiCamera** (must be set to true if you want to use this feature): If set to true the plugin uses a video configuration adjusted for the camera module. Default: false Credits: https://github.com/moritzmhmk/homebridge-camera-rpi
+**raspberryPiCamera** (must be set to true if you want to use this feature): If set to true the plugin uses a video configuration adjusted for the camera module. Default: false
 
 **video Config (FFMPEG)** (optional): Over this part you can configure a camera for HomeKit.
 
@@ -173,7 +165,7 @@ This plugin uses the HTTP API of nello.io for the following features:
 * Nello Authentication: logs the user with the specified username and password in
 * Nello Public API - /locations: Retrieves all locations of the user, which means all nello.io locks that are also visible to the account in the mobile app
 * Nello Public API - /locations/{locationId}/open: Opens the lock with the specified locationId and the user that is logged in
-* Video Doorbell - This plugin uses https://github.com/KhaosT/homebridge-camera-ffmpeg for implementation 
+* Video Doorbell - This plugin uses https://github.com/KhaosT/homebridge-camera-ffmpeg and https://github.com/moritzmhmk/homebridge-camera-rpi for implementation
 
 ## Security
 
