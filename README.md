@@ -12,16 +12,18 @@ Install the plugin via npm:
 npm install homebridge-nello -g
 ```
 
-There are multiple ways to get notifications if someone rings at your door:
 
-### Raspberry Pi Camera Module V2.1
-If you use a RaspberryPi for HomeBridge and have a connected Camera Module, you can use this camera as a doorbell for notifictions. Just take a look at the special config below the FFMPEG config. You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the installation part.
+There are multiple ways to get notifications if someone rings at your door:
+### You don't want to use a camera or don't have one
+It's also possible to use a motion sensor instead of a camera accessory. Just set "motionSensor" to true and your're done.
+
 
 ### You have a doorbell with srtp support
 If this is the case just take a look at the first configuration and add the stream and snapshot url and you're ready to go. You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the installation part.
 
-### You don't want to use a camera or don't have one
-It's also possible to use a motion sensor instead of a camera accessory. Just set "motionSensor" to true and your're done.
+
+### Raspberry Pi Camera Module V2.1
+If you're using a Raspberry Pi for HomeBridge and have a connected Camera Module, you can use this camera as a doorbell for notifictions. Just take a look at the special config below the FFMPEG config. You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the installation part.
 
 
 ### Optional: Installation of FFMPEG
@@ -36,9 +38,28 @@ Due to HomeKit limitations it's requiered to add the camera separately. Just tap
 ## Configuration
 There are two different kinds of configurations. The first one is the default one and the second one is a configuration specialized for the Raspberry Pi Camera Module V2.1.
 
-### FFMPEG Stream
-Add the configuration to your config.json file:
+### Default configuration (with a motion sensor for ring notifications)
+```json
+{
+    "platforms": [
+        {
+            "platform" : "NelloPlatform",
+            "name" : "nello.io",
+            "username": "<your-username>",
+            "password": "<your-password>",
+            "lockTimeout": 5000,
+            "locationUpdateInterval": 3600000,
+            "exposeReachability": true,
+            "motionSensor": true,
+            "motionTimeout": 5000,
+            "alwaysOpenSwitch": false,
+            "homekitUser": "Home Kit"
+        }
+    ]
+}
+```
 
+### FFMPEG Stream (from a strp source)
 ```json
 {
     "platforms": [
@@ -70,8 +91,6 @@ Add the configuration to your config.json file:
 ```
 
 ### Raspberry Pi Camera Module V2.1
-Add the configuration to your config.json file:
-
 ```json
 {
     "platforms": [
