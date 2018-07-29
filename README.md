@@ -14,13 +14,13 @@ npm install homebridge-nello -g
 
 ### Optional: Installation of FFMPEG
 **Only if you want to use a camera accessory. More information in the Configuration section.**
-You can install the default package or complie it yourself if you have a special case to fit.
+You can install the default package or compile it yourself if you have a special case to fit.
 ```bash
 sudo apt-get install ffmpeg
 ```
 General information about ffmpeg can be found here https://github.com/KhaosT/homebridge-camera-ffmpeg/wiki)
 
-Due to HomeKit limitations it's requiered to add the camera separately. Just tap on the plus button in the top right croner, choose "Add Accessory" and click on "Don't Have a Code of Can't Scan?". In the next view you should see the camera accessory and can tap it in order the add it to the Home app. The PIN is the same as of your HomeBridge instance.
+Due to HomeKit limitations it's requiered to add the camera separately. Just tap on the plus button in the top right corner, choose "Add Accessory" and click on "Don't Have a Code or Can't Scan?". In the next view you should see the camera accessory. Tap it in order to add it to the Home app. The PIN is the same as of your HomeBridge instance.
 
 ## Configuration
 There are multiple ways to get notifications if someone rings at your door:
@@ -81,7 +81,7 @@ If you have a doorbell with srtp support you can use this configuration.
 ```
 
 ### Raspberry Pi Camera Module V2.1
-If you're using a Raspberry Pi for HomeBridge and have a connected Camera Module, you can use this camera as a doorbell for notifictions.
+If you're using a Raspberry Pi for HomeBridge and have a connected Camera Module, you can use this camera for notifications.
 **You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the Installation part.**
 ```json
 {
@@ -175,8 +175,5 @@ This plugin uses the HTTP API of nello.io for the following features:
 * The webhook uses a relay service which is hosted by @AlexanderBabel. You can find the source code of the service here: https://github.com/AlexanderBabel/nello-backend
 
 ## Upcoming Features
-
-The following features will be implemented soon, stay tuned!
-Important: All new features will be added to the configuration, so that you can enable and disable all of them (if you don't like a feature).
 
 * Any suggestions?
