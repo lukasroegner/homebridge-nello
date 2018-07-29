@@ -64,7 +64,7 @@ If you have a doorbell with srtp support you can use this configuration.
             "motionSensor": false,
             "motionTimeout": 5000,
             "alwaysOpenSwitch": false,
-            "videoDoorbell": false,
+            "videoDoorbell": true,
             "video": {
                 "stream": "-re -i <your-url>",
                 "snapshotImage": "http://via.placeholder.com/1280x720",
