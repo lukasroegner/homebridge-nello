@@ -12,13 +12,29 @@ Install the plugin via npm:
 npm install homebridge-nello -g
 ```
 
-You need to install ffmpeg in order to see the unlock button in the notification.
+There are multiple ways to get notifications if someone rings at your door:
+
+### Raspberry Pi Camera Module V2.1
+If you use a RaspberryPi for HomeBridge and have a connected Camera Module, you can use this camera as a doorbell for notifictions. Just take a look at the special config below the FFMPEG config. You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the installation part.
+
+### You have a doorbell with srtp support
+If this is the case just take a look at the first configuration and add the stream and snapshot url and you're ready to go. You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the installation part.
+
+### You don't want to use a camera or don't have one
+It's also possible to use a motion sensor instead of a camera accessory. Just set "motionSensor" to true and your're done.
+
+
+### Optional: Installation of FFMPEG
+You can install the default package or complie it yourself if you have a special case to fit.
 ```bash
 sudo apt-get install ffmpeg
 ```
 General information about ffmpeg can be found here https://github.com/KhaosT/homebridge-camera-ffmpeg/wiki)
 
-When you want to use the video doorbell service you must add a camera accessory over the "Add Accessory" menu and enter the same code you have defined for your Homebridge.
+Due to HomeKit limitations it's requiered to add the camera separately. Just tap on the plus button in the top right croner, choose "Add Accessory" and click on "Don't Have a Code of Can't Scan?". In the next view you should see the camera accessory and can tap it in order the add it to the Home app. The PIN is the same as of your HomeBridge instance.
+
+## Configuration
+There are two different kinds of configurations. The first one is the default one and the second one is a configuration specialized for the Raspberry Pi Camera Module V2.1.
 
 ### FFMPEG Stream
 Add the configuration to your config.json file:
