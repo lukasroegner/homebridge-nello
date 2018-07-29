@@ -194,7 +194,6 @@ srtp://${address}:${port}?rtcpport=${port}&localrtcpport=${port}&pkt_size=1378`
         if (this.conf.debug) {
             console.log(ffmpegCommand)
         }
-        spawn('killall', ['ffmpeg'], { env: process.env })
         let ffmpeg = spawn('ffmpeg', ffmpegCommand.split(' '), { env: process.env })
         ffmpeg.stderr.on('data', function (data) { if (self.conf.debug) console.log('ffmpeg', String(data)) })
         this.ongoingSessions[sessionIdentifier] = ffmpeg

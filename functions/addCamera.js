@@ -1,4 +1,4 @@
-const FFMPEG = require('../ffmpeg').FFMPEG;
+const { FFMPEG } = require('../ffmpeg');
 const CameraSource = require('../CameraSource');
 
 module.exports = function (accessory) {
