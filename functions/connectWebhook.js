@@ -43,8 +43,37 @@ module.exports = function () {
                 }
                 if (accessory) {
                     if (data.action == "deny") {
+                        if (accessory.context.alwaysOpen) {
+                            platform.open(accessory.context.locationId, true, function (result) {
+                                const lockMechanismService = accessory.service(Service.LockMechanism);
+                                if (result) {
+                                    // Leaves the lock unsecured for some time (the lock timeout)
+                                    lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.UNSECURED);
+                                    setTimeout(function () {
+                                        lockMechanismService.setCharacteristic(Characteristic.LockTargetState, Characteristic.LockTargetState.SECURED);
+                                        lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.SECURED);
+                                    }, platform.config.lockTimeout);
+                                } else {
+                                    // Updates the reachability and reverts the target state of the lock
+                                    lockMechanismService.setCharacteristic(Characteristic.LockTargetState, Characteristic.LockTargetState.SECURED);
+                                    platform.updateReachability();
+                                }
+                            });
+                            return;
+                        }
+
                         if (accessory.videoDoorbell) {
                             accessory.videoDoorbell.getCharacteristic(Characteristic.ProgrammableSwitchEvent).setValue(0);
+                        }
+
+                        //Trigger the motion sensor
+                        if (platform.config.motionSensor) {
+                            accessory.context.motion = true;
+                            accessory.service(Service.MotionSensor).setCharacteristic(Characteristic.MotionDetected, true);
+                            setTimeout(function () {
+                                accessory.context.motion = false;
+                                accessory.service(Service.MotionSensor).setCharacteristic(Characteristic.MotionDetected, false);
+                            }, platform.config.motionTimeout);
                         }
                     } else if (data.action == "tw" || data.action == "geo" || data.action == "swipe") {
 

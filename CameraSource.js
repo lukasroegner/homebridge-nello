@@ -194,7 +194,6 @@ srtp://${address}:${port}?rtcpport=${port}&localrtcpport=${port}&pkt_size=1378`
         if (this.conf.debug) {
             console.log(ffmpegCommand)
         }
-        spawn('killall', ['ffmpeg'], { env: process.env })
         let ffmpeg = spawn('ffmpeg', ffmpegCommand.split(' '), { env: process.env })
         ffmpeg.stderr.on('data', function (data) { if (self.conf.debug) console.log('ffmpeg', String(data)) })
         this.ongoingSessions[sessionIdentifier] = ffmpeg
@@ -218,7 +217,7 @@ Camera.prototype.createCameraControlService = function () {
 // Private
 
 Camera.prototype._createStreamControllers = function (maxStreams, options) {
-    let self = this
+    const self = this;
 
     for (var i = 0; i < maxStreams; i++) {
         var streamController = new this.hap.StreamController(i, options, self)
@@ -229,11 +228,12 @@ Camera.prototype._createStreamControllers = function (maxStreams, options) {
 }
 
 Camera.prototype._v4l2CTLSetCTRL = function (name, value) {
-    let v4l2ctlCommand = `--set-ctrl ${name}=${value}`
-    if (this.conf.debug) {
+    const self = this;
+    let v4l2ctlCommand = `--set-ctrl ${name}=${value}`;
+    if (self.conf.debug) {
         console.log(v4l2ctlCommand)
     }
     let v4l2ctl = spawn('v4l2-ctl', v4l2ctlCommand.split(' '), { env: process.env })
-    v4l2ctl.on('error', function (err) { if (this.conf.debug) console.log(`error while setting ${name}: ${err.message}`) })
-    v4l2ctl.stderr.on('data', function (data) { if (this.conf.debug) console.log('v4l2-ctl', String(data)) })
+    v4l2ctl.on('error', function (err) { if (self.conf.debug) console.log(`error while setting ${name}: ${err.message}`) })
+    v4l2ctl.stderr.on('data', function (data) { if (self.conf.debug) console.log('v4l2-ctl', String(data)) })
 }

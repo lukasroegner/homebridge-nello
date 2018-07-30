@@ -1,6 +1,6 @@
 module.exports = function (locationId) {
     const platform = this;
-    const { Service, UUIDGen, Accessory } = platform;
+    const { UUIDGen, Accessory } = platform;
 
     // Gets the corresponding location object
     platform.log("Adding new accessory with location ID " + locationId + ".");
@@ -18,16 +18,13 @@ module.exports = function (locationId) {
     }
 
     // Creates the name for the accessory
-    var accessoryName = location.address.street + ", " + location.address.city;
+    var accessoryName = location.address.street + " " + location.address.city;
     platform.log("Accessory name for location ID " + locationId + " is " + accessoryName + ".");
 
     // Creates the new accessory
     var accessory = new Accessory(accessoryName, UUIDGen.generate(accessoryName));
     accessory.context.locationId = locationId;
     accessory.context.reachable = true;
-
-    // Creates the lock mechanism service for the accessory
-    accessory.addService(Service.LockMechanism, accessoryName);
 
     // configures the accessory
     platform.configureAccessory(accessory);

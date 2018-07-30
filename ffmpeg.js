@@ -3,6 +3,7 @@ var uuid, Service, Characteristic, StreamController;
 
 var crypto = require('crypto');
 var fs = require('fs');
+var ip = require('ip');
 var spawn = require('child_process').spawn;
 
 module.exports = {
@@ -40,8 +41,6 @@ function FFMPEG(hap, cameraConfig, log, videoProcessor) {
 
   this.pendingSessions = {};
   this.ongoingSessions = {};
-
-  this.uploader = cameraConfig.uploader || false;
 
   var numberOfStreams = ffmpegOpt.maxStreams || 2;
   var videoResolutions = [];
@@ -141,6 +140,7 @@ FFMPEG.prototype.handleSnapshotRequest = function (request, callback) {
   var imageSource = this.ffmpegImageSource !== undefined ? this.ffmpegImageSource : this.ffmpegSource;
   let ffmpeg = spawn(this.videoProcessor, (imageSource + ' -t 1 -s ' + resolution + ' -f image2 -').split(' '), { env: process.env });
   var imageBuffer = Buffer(0);
+  this.log("Snapshot from " + this.name + " at " + resolution);
   if (this.debug) console.log('ffmpeg ' + imageSource + ' -t 1 -s ' + resolution + ' -f image2 -');
   ffmpeg.stdout.on('data', function (data) {
     imageBuffer = Buffer.concat([imageBuffer, data]);
@@ -215,7 +215,18 @@ FFMPEG.prototype.prepareStream = function (request, callback) {
     sessionInfo["audio_ssrc"] = ssrc;
   }
 
-  response["address"] = { address: '127.0.0.1', type: 'v4' };
+  let currentAddress = ip.address();
+  var addressResp = {
+    address: currentAddress
+  };
+
+  if (ip.isV4Format(currentAddress)) {
+    addressResp["type"] = "v4";
+  } else {
+    addressResp["type"] = "v6";
+  }
+
+  response["address"] = addressResp;
   this.pendingSessions[uuid.unparse(sessionID)] = sessionInfo;
 
   callback(response);
@@ -275,7 +286,7 @@ FFMPEG.prototype.handleStreamRequest = function (request) {
           ' -r ' + fps +
           ' -f rawvideo' +
           ' ' + additionalCommandline +
-          ((vcodec !== 'copy') ? (' -vf scale=' + width + ':' + height) : '') +
+          ' -vf scale=' + width + ':' + height +
           ' -b:v ' + vbitrate + 'k' +
           ' -bufsize ' + vbitrate + 'k' +
           ' -maxrate ' + vbitrate + 'k' +
@@ -311,7 +322,7 @@ FFMPEG.prototype.handleStreamRequest = function (request) {
         }
 
         let ffmpeg = spawn(this.videoProcessor, ffmpegCommand.split(' '), { env: process.env });
-        // this.log("Start streaming video from " + this.name + " with " + width + "x" + height + "@" + vbitrate + "kBit");
+        this.log("Start streaming video from " + this.name + " with " + width + "x" + height + "@" + vbitrate + "kBit");
         if (this.debug) {
           console.log("ffmpeg " + ffmpegCommand);
         }
@@ -331,7 +342,7 @@ FFMPEG.prototype.handleStreamRequest = function (request) {
         });
         ffmpeg.on('close', (code) => {
           if (code == null || code == 0 || code == 255) {
-            // self.log("Stopped streaming");
+            self.log("Stopped streaming");
           } else {
             // self.log("ERROR: FFmpeg exited with code " + code);
             for (var i = 0; i < self.streamControllers.length; i++) {

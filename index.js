@@ -53,6 +53,7 @@ function NelloPlatform(log, config, api) {
   platform.config.lockTimeout = platform.config.lockTimeout || 5000;
   platform.config.locationUpdateInterval = platform.config.locationUpdateInterval == 0 ? 0 : (platform.config.locationUpdateInterval || 3600000);
   platform.config.exposeReachability = platform.config.exposeReachability;
+  platform.config.motionTimeout = platform.config.motionTimeout || 5000;
   platform.config.video = platform.config.video || {};
   platform.config.video.stream = platform.config.video.stream || "-re -i";
   platform.config.video.snapshotImage = platform.config.video.snapshotImage || "http://via.placeholder.com/1280x720";
