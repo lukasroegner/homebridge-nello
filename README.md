@@ -47,7 +47,7 @@ If you don't want to use a camera or don't have one this is the configuration fo
 }
 ```
 
-### FFMPEG Stream (from a strp source)
+### FFMPEG Stream (from a srtp source)
 If you have a doorbell with srtp support you can use this configuration.
 **You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the Installation part.**
 ```json
