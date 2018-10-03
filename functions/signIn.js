@@ -16,6 +16,10 @@ module.exports = function (callback) {
         platform.log("No password for nello.io provided. Please make sure to create a dedicated nello.io account for this homebridge plugin.");
         return callback(false);
     }
+    if (!platform.config.clientId) {
+        platform.log("No client ID for nello.io provided. Please make sure that you have requested a client ID from nello.io.");
+        return callback(false);
+    }
 
     // Sends the login request to the API
     platform.log("Signing in.");

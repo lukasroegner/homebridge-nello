@@ -20,12 +20,13 @@ sudo apt-get install ffmpeg
 ```
 General information about ffmpeg can be found here https://github.com/KhaosT/homebridge-camera-ffmpeg/wiki)
 
-Due to HomeKit limitations it's requiered to add the camera separately. Just tap on the plus button in the top right corner, choose "Add Accessory" and click on "Don't Have a Code or Can't Scan?". In the next view you should see the camera accessory. Tap it in order to add it to the Home app. The PIN is the same as of your HomeBridge instance.
+Due to HomeKit limitations it's required to add the camera separately. Just tap on the plus button in the top right corner, choose "Add Accessory" and click on "Don't Have a Code or Can't Scan?". In the next view you should see the camera accessory. Tap it in order to add it to the Home app. The PIN is the same as of your HomeBridge instance.
 
 ## Retrieving a client ID and client secret from Nello
 
-**IMPORTANT:** The client ID that we are currently using for the plugin will be deprecated soon, every homebridge instance has to use an own client ID. Please visit https://auth.nello.io/admin/ and sign in with your username and password that you also use in the nello.io app.
-Fill in all required fields in the "Create API client" form (mark both "Code" and "Token" as "Allowed response type"). Copy the client ID and paste it into the configuration as seen below.
+**IMPORTANT:** Please visit https://auth.nello.io/admin/ and sign in with your username and password that you also use in the nello.io app.
+Fill in all required fields in the "Create API client" form (mark all "Allowed response type"s and "Allowed grant type"s). Copy the client ID and paste it into the configuration as seen below.
+If you are using a dedicated user account for this plugin, make sure that you use the credentials of this account to generate a client ID.
 
 ## Configuration
 There are multiple ways to get notifications if someone rings at your door:

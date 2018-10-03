@@ -47,7 +47,6 @@ function NelloPlatform(log, config, api) {
   platform.accessories = [];
 
   // Initializes the configuration
-  platform.config.clientId = platform.config.clientId || "7d9500ef-f5cb-41cf-b684-4e5345f0c48b";
   platform.config.apiUri = "https://public-api.nello.io/v1";
   platform.config.authUri = "https://auth.nello.io";
   platform.config.lockTimeout = platform.config.lockTimeout || 5000;
