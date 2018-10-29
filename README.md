@@ -1,6 +1,6 @@
 # homebridge-nello
 
-This project is a homebridge plugin for the smart intercom nello.io. All your nello.io locks are dynamically added to HomeKit as lock accessories.
+This project is a homebridge plugin for the smart intercom nello.io. All your nello.io locks are dynamically added to HomeKit as lock accessories. If you want to learn more about the smart intercom nello one, please visit https://www.nello.io. There is an excellent blog post about the integration of nello into homebridge that can be found at https://www.nello.io/blog/how-to-connect-your-nello-one-to-homebridge/.
 
 ## Installation
 
