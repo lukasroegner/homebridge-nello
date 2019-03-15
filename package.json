@@ -1,6 +1,6 @@
 {
   "name": "homebridge-nello",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Plugin for using the smart intercom system nello.io in homebridge.",
   "license": "MIT",
   "keywords": [
