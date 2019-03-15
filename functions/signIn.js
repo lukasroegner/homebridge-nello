@@ -37,11 +37,9 @@ module.exports = function (callback) {
         if (error || response.statusCode != 200 || !body || !body.access_token) {
             if (error) {
                 platform.log("Error while signing in. Error: " + error);
-            }
-            if (response.statusCode != 200) {
+            } else if (response.statusCode != 200) {
                 platform.log("Error while signing in. Status Code: " + response.statusCode);
-            }
-            if (!body || !body.access_token) {
+            } else if (!body || !body.access_token) {
                 platform.log("Error while signing in. Could not get access token from response: " + JSON.stringify(body));
             }
             platform.signOut();

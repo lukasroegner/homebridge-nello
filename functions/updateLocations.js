@@ -30,11 +30,9 @@ module.exports = function (retry, callback) {
         if (error || response.statusCode != 200 || !body || !body.data) {
             if (error) {
                 platform.log("Getting locations from nello.io failed. Error: " + error);
-            }
-            if (response.statusCode != 200) {
+            } else if (response.statusCode != 200) {
                 platform.log("Getting locations from nello.io failed. Status Code: " + response.statusCode);
-            }
-            if (!body || !body.data) {
+            } else if (!body || !body.data) {
                 platform.log("Getting locations from nello.io failed. Could not get locations from response: " + JSON.stringify(body));
             }
             platform.signOut();

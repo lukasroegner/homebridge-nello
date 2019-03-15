@@ -53,8 +53,7 @@ module.exports = function (locationId, uri, retry, callback) {
         if (error || response.statusCode != 200) {
             if (error) {
                 platform.log("Updating webhook failed. Error: " + error);
-            }
-            if (response.statusCode != 200) {
+            } else if (response.statusCode != 200) {
                 platform.log("Updating webhook failed. Status Code: " + response.statusCode);
             }
             platform.signOut();

@@ -53,8 +53,7 @@ module.exports = function (locationId, retry, callback) {
         if (error || response.statusCode != 200) {
             if (error) {
                 platform.log("Opening door at location with ID " + locationId + " failed. Error: " + error);
-            }
-            if (response.statusCode != 200) {
+            } else if (response.statusCode != 200) {
                 platform.log("Opening door at location with ID " + locationId + " failed. Status Code: " + response.statusCode);
             }
             platform.signOut();
