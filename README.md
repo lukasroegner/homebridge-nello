@@ -1,6 +1,6 @@
 # homebridge-nello
 
-This project is a homebridge plugin for the smart intercom nello.io. All your nello.io locks are dynamically added to HomeKit as lock accessories.
+This project is a homebridge plugin for the smart intercom nello.io. All your nello.io locks are dynamically added to HomeKit as lock accessories. If you want to learn more about the smart intercom nello one, please visit https://www.nello.io. There is an excellent blog post about the integration of nello into homebridge that can be found at https://www.nello.io/blog/how-to-connect-your-nello-one-to-homebridge/.
 
 ## Installation
 
@@ -20,7 +20,13 @@ sudo apt-get install ffmpeg
 ```
 General information about ffmpeg can be found here https://github.com/KhaosT/homebridge-camera-ffmpeg/wiki)
 
-Due to HomeKit limitations it's requiered to add the camera separately. Just tap on the plus button in the top right corner, choose "Add Accessory" and click on "Don't Have a Code or Can't Scan?". In the next view you should see the camera accessory. Tap it in order to add it to the Home app. The PIN is the same as of your HomeBridge instance.
+Due to HomeKit limitations it's required to add the camera separately. Just tap on the plus button in the top right corner, choose "Add Accessory" and click on "Don't Have a Code or Can't Scan?". In the next view you should see the camera accessory. Tap it in order to add it to the Home app. The PIN is the same as of your HomeBridge instance.
+
+## Retrieving a client ID and client secret from Nello
+
+**IMPORTANT:** Please visit https://auth.nello.io/admin/ and sign in with your username and password that you also use in the nello.io app.
+Fill in all required fields in the "Create API client" form (mark all "Allowed response type"s and "Allowed grant type"s). Copy the client ID and paste it into the configuration as seen below.
+If you are using a dedicated user account for this plugin, make sure that you use the credentials of this account to generate a client ID.
 
 ## Configuration
 There are multiple ways to get notifications if someone rings at your door:
@@ -35,6 +41,7 @@ If you don't want to use a camera or don't have one this is the configuration fo
             "name" : "nello.io",
             "username": "<your-username>",
             "password": "<your-password>",
+            "clientId": "<paste-client-id-here>",
             "lockTimeout": 5000,
             "locationUpdateInterval": 3600000,
             "exposeReachability": true,
@@ -58,6 +65,7 @@ If you have a doorbell with srtp support you can use this configuration.
             "name" : "nello.io",
             "username": "<your-username>",
             "password": "<your-password>",
+            "clientId": "<paste-client-id-here>",
             "lockTimeout": 5000,
             "locationUpdateInterval": 3600000,
             "exposeReachability": true,
@@ -79,6 +87,13 @@ If you have a doorbell with srtp support you can use this configuration.
 }
 ```
 
+**Troubleshooting Guide for the video configuration:**
+* Make sure that you either use FFmpeg command line arguments for the `snapshotImage` property (e.g. `-i ...`) or provide a URL. If you use an https:// address, make sure that you compiled FFmpeg with openssl (which is not the case when you followed the installtion instructions for Raspberry PI from https://github.com/KhaosT/homebridge-camera-ffmpeg).
+* If you want to use a local image for the `snapshotImage` property, please set the property to `-i <absolute-path-to-your-image>`. Don't use `~`, use an absolute path and start your path with `/`.
+* We included a nice static image, which you can use. Therefore, set the `snapshotImage` property to `-i <absolute-path-to-your-global-node-modules>/homebridge-nello/assets/nello.png`. The path to your global node modules varies based on the OS and the installation method. On a Raspberry PI, it is usually in `/opt/node/lib/node_modules`.
+* If you want to use a static image for a fake video stream, set the `stream` property to `-re -loop 1 -i <absolute-path-to-your-image>`
+* If you still have troubles configuring the camera, feel free to create issues. Please provide your configuration.
+
 ### Raspberry Pi Camera Module V2.1
 If you're using a Raspberry Pi for HomeBridge and have a connected Camera Module, you can use this camera for notifications.
 **You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the Installation part.**
@@ -90,6 +105,7 @@ If you're using a Raspberry Pi for HomeBridge and have a connected Camera Module
             "name" : "nello.io",
             "username": "<your-username>",
             "password": "<your-password>",
+            "clientId": "<paste-client-id-here>",
             "lockTimeout": 5000,
             "locationUpdateInterval": 3600000,
             "exposeReachability": true,
