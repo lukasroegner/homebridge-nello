@@ -48,9 +48,9 @@ If you don't want to use a camera or don't have one this is the configuration fo
         {
             "platform" : "NelloPlatform",
             "name" : "nello.io",
-            "username": "<your-username>",
-            "password": "<your-password>",
+            "authType": "secret",
             "clientId": "<paste-client-id-here>",
+            "clientSecret": "<paste-client-secret-here>",
             "lockTimeout": 5000,
             "locationUpdateInterval": 3600000,
             "exposeReachability": true,
@@ -75,9 +75,9 @@ If you have a doorbell with srtp support you can use this configuration.
         {
             "platform" : "NelloPlatform",
             "name" : "nello.io",
-            "username": "<your-username>",
-            "password": "<your-password>",
+            "authType": "secret",
             "clientId": "<paste-client-id-here>",
+            "clientSecret": "<paste-client-secret-here>",
             "lockTimeout": 5000,
             "locationUpdateInterval": 3600000,
             "exposeReachability": true,
@@ -119,9 +119,9 @@ If you're using a Raspberry Pi for HomeBridge and have a connected Camera Module
         {
             "platform" : "NelloPlatform",
             "name" : "nello.io",
-            "username": "<your-username>",
-            "password": "<your-password>",
+            "authType": "secret",
             "clientId": "<paste-client-id-here>",
+            "clientSecret": "<paste-client-secret-here>",
             "lockTimeout": 5000,
             "locationUpdateInterval": 3600000,
             "exposeReachability": true,
@@ -141,9 +141,15 @@ If you're using a Raspberry Pi for HomeBridge and have a connected Camera Module
 }
 ```
 
-**username**: the email address of your nello.io account
+**authType** (optional): the method of authentication, either "password" or "secret". This is set to "password" for backwards compatibility with previous versions of this plugin, but it is recommended to use the "secret" method to avoid having to keep a username and password in plaintext in the configuration.
 
-**password**: the password of your account
+**clientId**: Client ID (read "Retrieving a client ID and client secret from Nello")/
+
+**clientSecret** (required for "secret" auth)
+
+**username** (required for "password" auth): the email address of your nello.io account.
+
+**password** (required for "password" auth): the password of your account.
 
 **lockTimeout** (optional): timeout in milliseconds, after which the lock will be displayed as locked after you unlock the door. Default value is 5000.
 
