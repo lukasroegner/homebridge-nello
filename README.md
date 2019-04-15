@@ -13,11 +13,15 @@ npm install homebridge-nello -g
 ```
 
 ### Optional: Installation of FFMPEG
+
 **Only if you want to use a camera accessory. More information in the Configuration section.**
+
 You can install the default package or compile it yourself if you have a special case to fit.
+
 ```bash
 sudo apt-get install ffmpeg
 ```
+
 General information about ffmpeg can be found here https://github.com/KhaosT/homebridge-camera-ffmpeg/wiki)
 
 Due to HomeKit limitations it's required to add the camera separately. Just tap on the plus button in the top right corner, choose "Add Accessory" and click on "Don't Have a Code or Can't Scan?". In the next view you should see the camera accessory. Tap it in order to add it to the Home app. The PIN is the same as of your HomeBridge instance.
@@ -25,14 +29,19 @@ Due to HomeKit limitations it's required to add the camera separately. Just tap 
 ## Retrieving a client ID and client secret from Nello
 
 **IMPORTANT:** Please visit https://auth.nello.io/admin/ and sign in with your username and password that you also use in the nello.io app.
+
 Fill in all required fields in the "Create API client" form (mark all "Allowed response type"s and "Allowed grant type"s). Copy the client ID and paste it into the configuration as seen below.
+
 If you are using a dedicated user account for this plugin, make sure that you use the credentials of this account to generate a client ID.
 
 ## Configuration
+
 There are multiple ways to get notifications if someone rings at your door:
 
 ### Default configuration (with a motion sensor for ring notifications)
+
 If you don't want to use a camera or don't have one this is the configuration for you.
+
 ```json
 {
     "platforms": [
@@ -55,8 +64,11 @@ If you don't want to use a camera or don't have one this is the configuration fo
 ```
 
 ### FFMPEG Stream (from a srtp source)
+
 If you have a doorbell with srtp support you can use this configuration.
+
 **You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the Installation part.**
+
 ```json
 {
     "platforms": [
@@ -88,6 +100,7 @@ If you have a doorbell with srtp support you can use this configuration.
 ```
 
 **Troubleshooting Guide for the video configuration:**
+
 * Make sure that you either use FFmpeg command line arguments for the `snapshotImage` property (e.g. `-i ...`) or provide a URL. If you use an https:// address, make sure that you compiled FFmpeg with openssl (which is not the case when you followed the installtion instructions for Raspberry PI from https://github.com/KhaosT/homebridge-camera-ffmpeg).
 * If you want to use a local image for the `snapshotImage` property, please set the property to `-i <absolute-path-to-your-image>`. Don't use `~`, use an absolute path and start your path with `/`.
 * We included a nice static image, which you can use. Therefore, set the `snapshotImage` property to `-i <absolute-path-to-your-global-node-modules>/homebridge-nello/assets/nello.png`. The path to your global node modules varies based on the OS and the installation method. On a Raspberry PI, it is usually in `/opt/node/lib/node_modules`.
@@ -95,8 +108,11 @@ If you have a doorbell with srtp support you can use this configuration.
 * If you still have troubles configuring the camera, feel free to create issues. Please provide your configuration.
 
 ### Raspberry Pi Camera Module V2.1
+
 If you're using a Raspberry Pi for HomeBridge and have a connected Camera Module, you can use this camera for notifications.
+
 **You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the Installation part.**
+
 ```json
 {
     "platforms": [
