@@ -147,6 +147,10 @@ If you're using a Raspberry Pi for HomeBridge and have a connected Camera Module
 
 **raspberryPiCamera** (must be set to true if you want to use this feature): If set to true the plugin uses a video configuration adjusted for the camera module. Default: false
 
+**publicWebhookUrl** (optional): Specify this if you would not like to use the Webhook Relay service and instead setup port forwarding and Dynamic DNS to make a local Express server publicly accessible. Must be configured to the full URL (e.g. http://example.com:3000/ or https://example.com/) to register with Nello.io.
+
+**webhookServerPort** (optional): Port to run the Express Webhook server on. Only required if you setup the publicWebhookUrl above. Default: 5000
+
 **video Config (FFMPEG)** (optional): Over this part you can configure a camera for HomeKit.
 
 **video.stream** (optional): Enter a stream url of e.g. your RaspberryPi camera or leave it blank if you don't have one.
