@@ -48,7 +48,7 @@ If you don't want to use a camera or don't have one this is the configuration fo
         {
             "platform" : "NelloPlatform",
             "name" : "nello.io",
-            "authType": "secret",
+            "authType": "client",
             "clientId": "<paste-client-id-here>",
             "clientSecret": "<paste-client-secret-here>",
             "lockTimeout": 5000,
@@ -75,7 +75,7 @@ If you have a doorbell with srtp support you can use this configuration.
         {
             "platform" : "NelloPlatform",
             "name" : "nello.io",
-            "authType": "secret",
+            "authType": "client",
             "clientId": "<paste-client-id-here>",
             "clientSecret": "<paste-client-secret-here>",
             "lockTimeout": 5000,
@@ -119,7 +119,7 @@ If you're using a Raspberry Pi for HomeBridge and have a connected Camera Module
         {
             "platform" : "NelloPlatform",
             "name" : "nello.io",
-            "authType": "secret",
+            "authType": "client",
             "clientId": "<paste-client-id-here>",
             "clientSecret": "<paste-client-secret-here>",
             "lockTimeout": 5000,
@@ -141,11 +141,11 @@ If you're using a Raspberry Pi for HomeBridge and have a connected Camera Module
 }
 ```
 
-**authType** (optional): the method of authentication, either "password" or "secret". This is set to "password" for backwards compatibility with previous versions of this plugin, but it is recommended to use the "secret" method to avoid having to keep a username and password in plaintext in the configuration.
+**authType** (optional): the method of authentication, either "password" or "client". This is set to "password" for backwards compatibility with previous versions of this plugin, but it is recommended to use the "client" method to avoid having to keep a username and password in plaintext in the configuration.
 
 **clientId**: Client ID (read "Retrieving a client ID and client secret from Nello")/
 
-**clientSecret** (required for "secret" auth)
+**clientSecret** (required for "client" auth)
 
 **username** (required for "password" auth): the email address of your nello.io account.
 
