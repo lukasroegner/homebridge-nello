@@ -49,6 +49,8 @@ function NelloPlatform(log, config, api) {
   // Initializes the configuration
   platform.config.apiUri = "https://public-api.nello.io/v1";
   platform.config.authUri = "https://auth.nello.io";
+  platform.config.publicWebhookUrl = platform.config.publicWebhookUrl || '';
+  platform.config.webhookServerPort = platform.config.webhookServerPort || 5000;
   platform.config.authType = platform.config.authType || 'password';
   platform.config.lockTimeout = platform.config.lockTimeout || 5000;
   platform.config.locationUpdateInterval = platform.config.locationUpdateInterval == 0 ? 0 : (platform.config.locationUpdateInterval || 3600000);
