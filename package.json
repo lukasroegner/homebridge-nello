@@ -18,10 +18,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/lukas.roegner/homebridge-nello.git"
+    "url": "git://github.com/lukasroegner/homebridge-nello.git"
   },
   "bugs": {
-    "url": "http://github.com/lukas.roegner/homebridge-nello/issues"
+    "url": "http://github.com/lukasroegner/homebridge-nello/issues"
   },
   "engines": {
     "node": ">=0.12.0",
