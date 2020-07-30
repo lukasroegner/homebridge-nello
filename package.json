@@ -10,11 +10,19 @@
     "nello",
     "nello.io"
   ],
+  "scripts": {
+    "lint": "eslint index.js ./functions/ --fix"
+  },
   "dependencies": {
     "express": "^4.17.1",
     "ip": "^1.1.5",
     "request": "^2.88.2",
     "socket.io-client": "^2.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.5.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0"
   },
   "repository": {
     "type": "git",
