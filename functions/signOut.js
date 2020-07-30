@@ -1,7 +1,7 @@
 module.exports = function () {
-    const platform = this;
+  const platform = this;
 
-    // Clears the session information
-    platform.token = null;
-    platform.locations = [];
-}
+  // Clears the session information
+  platform.token = null;
+  platform.locations = [];
+};

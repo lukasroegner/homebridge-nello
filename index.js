@@ -1,19 +1,18 @@
-var homebridgeObj = null;
-var pluginName = "homebridge-nello";
-var platformName = "NelloPlatform";
+let homebridgeObj = null;
+const pluginName = 'homebridge-nello';
+const platformName = 'NelloPlatform';
 
 /**
  * Defines the export of the platform module.
  * @param homebridge The homebridge object that contains all classes, objects and functions for communicating with HomeKit.
  */
 module.exports = function (homebridge) {
-
   // Gets the classes required for implementation of the plugin
   homebridgeObj = homebridge;
 
   // Registers the dynamic nello platform, as the locks are read from the API and created dynamically
   homebridge.registerPlatform(pluginName, platformName, NelloPlatform, true);
-}
+};
 
 /**
  * Initializes a new platform instance for the nello plugin.
@@ -24,7 +23,7 @@ module.exports = function (homebridge) {
 function NelloPlatform(log, config, api) {
   const platform = this;
 
-  //Save objects for functions
+  // Save objects for functions
   platform.Accessory = homebridgeObj.platformAccessory;
   platform.Categories = homebridgeObj.hap.Accessory.Categories;
   platform.Service = homebridgeObj.hap.Service;
@@ -47,8 +46,8 @@ function NelloPlatform(log, config, api) {
   platform.accessories = [];
 
   // Initializes the configuration
-  platform.config.apiUri = "https://public-api.nello.io/v1";
-  platform.config.authUri = "https://auth.nello.io";
+  platform.config.apiUri = 'https://public-api.nello.io/v1';
+  platform.config.authUri = 'https://auth.nello.io';
   platform.config.publicWebhookUrl = platform.config.publicWebhookUrl || '';
   platform.config.webhookServerPort = platform.config.webhookServerPort || 5000;
   platform.config.authType = platform.config.authType || 'password';
@@ -57,41 +56,39 @@ function NelloPlatform(log, config, api) {
   platform.config.exposeReachability = platform.config.exposeReachability;
   platform.config.motionTimeout = platform.config.motionTimeout || 5000;
   platform.config.video = platform.config.video || {};
-  platform.config.video.stream = platform.config.video.stream || "-re -i";
-  platform.config.video.snapshotImage = platform.config.video.snapshotImage || "http://via.placeholder.com/1280x720";
+  platform.config.video.stream = platform.config.video.stream || '-re -i';
+  platform.config.video.snapshotImage = platform.config.video.snapshotImage || 'http://via.placeholder.com/1280x720';
   platform.config.video.maxWidth = platform.config.video.maxWidth || 1280;
   platform.config.video.maxHeight = platform.config.video.maxHeight || 720;
   platform.config.video.maxFPS = platform.config.video.maxFPS || 30;
-  platform.config.video.vcodec = platform.config.video.vcodec || "h264_omx";
+  platform.config.video.vcodec = platform.config.video.vcodec || 'h264_omx';
   platform.config.video.rotate = platform.config.video.rotate || 0;
 
   // Checks whether the API object is available
   if (api) {
-
     // Saves the API object to register new locks later on
-    log("Homebridge API available.");
+    log('Homebridge API available.');
     platform.api = api;
 
     // Subscribes to the event that is raised when homebrige finished loading cached accessories
-    platform.api.on('didFinishLaunching', function () {
-      platform.log("Cached accessories loaded.");
+    platform.api.on('didFinishLaunching', () => {
+      platform.log('Cached accessories loaded.');
 
       // Initially updates the locations to get the locks
-      platform.updateLocations(true, function () {
-
+      platform.updateLocations(true, () => {
         // Starts the timer for updating locations (i.e. adding and removing locks of the user)
         if (platform.config.locationUpdateInterval > 0) {
-          setInterval(function () {
-            platform.updateLocations(true, function () { });
+          setInterval(() => {
+            platform.updateLocations(true, () => { });
           }, platform.config.locationUpdateInterval);
         }
 
-        //Connect to backend
+        // Connect to backend
         platform.connectWebhook();
       });
     });
   } else {
-    log("Homebridge API not available, please update your homebridge version!");
+    log('Homebridge API not available, please update your homebridge version!');
   }
 }
 
