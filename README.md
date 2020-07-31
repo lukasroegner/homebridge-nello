@@ -216,3 +216,16 @@ This plugin uses the HTTP API of nello.io for the following features:
 ## Upcoming Features
 
 * Any suggestions?
+
+## Development
+
+### Linting
+
+`npm run lint` / `npm run format`
+
+### Publishing
+
+* To bump the version automatically, go to the (`bump-version`)[https://github.com/lukasroegner/homebridge-nello/actions?query=workflow%3Abump-version] workflow and trigger a new event by clicking `Run workflow`. You can enter `major` `minor` `patch` or an actual version like `v0.0.1`. This bumps the `package.json` version, creates a tag, and pushes it back to master. It also drafts a release for you. (Source: [bump-version.yml](./.github/workflows/bump-version.yml)).
+* Now go to [Releases](https://github.com/lukasroegner/homebridge-nello/releases) where you will see a release already drafted for you. When you publish it, the `npm-publish` workflow will automatically run and publish to NPM. (Source: [npm-publish.yml](./.github/workflows/npm-publish.yml)).
+
+(Requires GitHub Action `NPM_TOKEN` secret to be set in the repo with publish rights).
