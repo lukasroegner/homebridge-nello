@@ -1,8 +1,8 @@
-module.exports = function (accessory) {
+module.exports = function configureAccessory(accessory) {
   const platform = this;
   const { Characteristic, Service } = platform;
 
-  accessory.service = function (service) {
+  accessory.service = function accessoryService(service) {
     if (this.getService(service)) {
       return this.getService(service);
     }
@@ -60,18 +60,30 @@ module.exports = function (accessory) {
 
       // Actually opens the door
       const lockMechanismService = accessory.service(Service.LockMechanism);
-      if (value == Characteristic.LockTargetState.UNSECURED) {
+      if (value === Characteristic.LockTargetState.UNSECURED) {
         platform.open(accessory.context.locationId, true, (result) => {
           if (result) {
             // Leaves the lock unsecured for some time (the lock timeout)
-            lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.UNSECURED);
+            lockMechanismService.setCharacteristic(
+              Characteristic.LockCurrentState,
+              Characteristic.LockCurrentState.UNSECURED,
+            );
             setTimeout(() => {
-              lockMechanismService.setCharacteristic(Characteristic.LockTargetState, Characteristic.LockTargetState.SECURED);
-              lockMechanismService.setCharacteristic(Characteristic.LockCurrentState, Characteristic.LockCurrentState.SECURED);
+              lockMechanismService.setCharacteristic(
+                Characteristic.LockTargetState,
+                Characteristic.LockTargetState.SECURED,
+              );
+              lockMechanismService.setCharacteristic(
+                Characteristic.LockCurrentState,
+                Characteristic.LockCurrentState.SECURED,
+              );
             }, platform.config.lockTimeout);
           } else {
             // Updates the reachability and reverts the target state of the lock
-            lockMechanismService.setCharacteristic(Characteristic.LockTargetState, Characteristic.LockTargetState.SECURED);
+            lockMechanismService.setCharacteristic(
+              Characteristic.LockTargetState,
+              Characteristic.LockTargetState.SECURED,
+            );
             platform.updateReachability();
           }
         });

@@ -1,18 +1,20 @@
 const request = require('request');
 
-module.exports = function (retry, callback) {
+module.exports = function updateLocations(retry, callback) {
   const platform = this;
 
   // Checks if the user is signed in
   platform.log('Getting locations from nello.io.');
   if (!platform.token) {
-    return platform.signIn((result) => {
+    platform.signIn((result) => {
       if (result) {
-        return platform.updateLocations(true, callback);
+        platform.updateLocations(true, callback);
+      } else {
+        platform.updateReachability();
+        callback(false);
       }
-      platform.updateReachability();
-      return callback(false);
     });
+    return;
   }
 
   // Sends a request to the API to get all locations of the user
@@ -25,10 +27,10 @@ module.exports = function (retry, callback) {
     json: true,
   }, (error, response, body) => {
     // Checks if the API returned a positive result
-    if (error || response.statusCode != 200 || !body || !body.data) {
+    if (error || response.statusCode !== 200 || !body || !body.data) {
       if (error) {
         platform.log(`Getting locations from nello.io failed. Error: ${error}`);
-      } else if (response.statusCode != 200) {
+      } else if (response.statusCode !== 200) {
         platform.log(`Getting locations from nello.io failed. Status Code: ${response.statusCode}`);
       } else if (!body || !body.data) {
         platform.log(`Getting locations from nello.io failed. Could not get locations from response: ${JSON.stringify(body)}`);
@@ -37,52 +39,51 @@ module.exports = function (retry, callback) {
 
       if (retry) {
         platform.log('Retry signing in and getting locations again.');
-        return platform.updateLocations(false, callback);
+        platform.updateLocations(false, callback);
+      } else {
+        platform.updateReachability();
+        callback(false);
       }
 
-      platform.updateReachability();
-      return callback(false);
+      return;
     }
 
     // Stores the location information
     platform.locations = body.data;
 
-    // Cycles through all existing homebridge accessory to remove the ones that do not exist in nello.io
-    for (var i = 0; i < platform.accessories.length; i++) {
-      // Checks if the location exists
-      let locationExists = false;
-      for (var j = 0; j < platform.locations.length; j++) {
-        if (platform.locations[j].location_id == platform.accessories[i].context.locationId) {
-          locationExists = true;
-        }
-      }
+    // Cycles through all existing homebridge accessory to remove
+    // the ones that do not exist in nello.io
+    platform.accessories.forEach((accessory) => {
+      const locationExists = platform.locations.some(
+        (loc) => loc.location_id === accessory.context.locationId,
+      );
 
-      // Removes the accessory
       if (!locationExists) {
-        platform.removeAccessory(platform.locations[j].location_id);
+        platform.removeAccessory(accessory.context.locationId);
       }
-    }
+    });
 
     // Cycles through all locations to add new accessories
-    for (var i = 0; i < platform.locations.length; i++) {
-      // Checks if an accessory already exists
-      let accessoryExists = false;
-      for (var j = 0; j < platform.accessories.length; j++) {
-        if (platform.accessories[j].context.locationId == platform.locations[i].location_id) {
-          accessoryExists = true;
-          platform.addCamera(platform.accessories[j]);
-        }
-      }
+    platform.locations.forEach((location) => {
+      const accessories = platform.accessories.filter(
+        (accessory) => accessory.context.locationId === location.location_id,
+      );
 
-      // Creates the new accessory
+      const accessoryExists = accessories.length > 0;
+
+      accessories.forEach((accessory) => {
+        platform.addCamera(accessory);
+      });
+
       if (!accessoryExists) {
-        platform.addAccessory(platform.locations[i].location_id);
+        platform.addAccessory(location.location_id);
       }
-    }
+    });
 
     // Returns a positive result
     platform.updateReachability();
     platform.log('Got locations from nello.io.');
-    return callback(true);
+
+    callback(true);
   });
 };

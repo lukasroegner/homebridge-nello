@@ -1,41 +1,35 @@
 const request = require('request');
 
-module.exports = function (locationId, retry, callback) {
+module.exports = function open(locationId, retry, callback) {
   const platform = this;
 
   // Checks if the location still exists
-  let locationExists = false;
-  for (var i = 0; i < platform.locations.length; i++) {
-    if (platform.locations[i].location_id == locationId) {
-      locationExists = true;
-    }
-  }
-  if (!locationExists) {
-    return callback(false);
+  if (!platform.locations.some((location) => location.location_id === locationId)) {
+    callback(false);
+    return;
   }
 
   // Checks if the user is signed in
   platform.log(`Opening door at location with ID ${locationId}.`);
   if (!platform.token) {
-    return platform.signIn((result) => {
+    platform.signIn((result) => {
       if (result) {
-        return platform.open(locationId, true, callback);
+        platform.open(locationId, true, callback);
+      } else {
+        platform.updateReachability();
+        callback(false);
       }
-      platform.updateReachability();
-      return callback(false);
     });
+    return;
   }
 
   // Gets the corresponding accessory
-  let accessory = null;
-  for (var i = 0; i < platform.accessories.length; i++) {
-    if (platform.accessories[i].context.locationId == locationId) {
-      accessory = platform.accessories[i];
-    }
-  }
+  const accessory = platform.accessories.find((acc) => acc.context.locationId === locationId);
+
   if (!accessory) {
     platform.log(`Opening door at location with ID ${locationId} failed. The lock is not available anymore.`);
-    return callback(false);
+    callback(false);
+    return;
   }
 
   // Sends the request to open the lock
@@ -46,28 +40,32 @@ module.exports = function (locationId, retry, callback) {
       Authorization: `${platform.token.token_type} ${platform.token.access_token}`,
     },
     json: true,
-  }, (error, response, body) => {
+  }, (error, response) => {
     // Checks if the API returned a positive result
-    if (error || response.statusCode != 200) {
+    if (error || response.statusCode !== 200) {
       if (error) {
         platform.log(`Opening door at location with ID ${locationId} failed. Error: ${error}`);
-      } else if (response.statusCode != 200) {
+      } else if (response.statusCode !== 200) {
         platform.log(`Opening door at location with ID ${locationId} failed. Status Code: ${response.statusCode}`);
       }
+
       platform.signOut();
 
       if (retry) {
         platform.log('Retry signing in and opening the door again.');
-        return platform.open(locationId, false, callback);
+        platform.open(locationId, false, callback);
+        return;
       }
 
       platform.updateReachability();
-      return callback(false);
+      callback(false);
+      return;
     }
 
     // Returns the positive result
     platform.updateReachability();
     platform.log(`Opened door at location with ID ${locationId}.`);
-    return callback(true);
+
+    callback(true);
   });
 };

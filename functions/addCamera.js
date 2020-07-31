@@ -1,13 +1,16 @@
 const { FFMPEG } = require('../ffmpeg');
 const CameraSource = require('../CameraSource');
 
-module.exports = function (accessory) {
+module.exports = function addCamera(accessory) {
   const platform = this;
   const {
     UUIDGen, Accessory, Service, Characteristic, Categories, hap,
   } = platform;
 
-  if (!(platform.config.videoDoorbell || platform.config.raspberryPiCamera) || accessory.videoDoorbell) {
+  if (
+    !(platform.config.videoDoorbell || platform.config.raspberryPiCamera)
+    || accessory.videoDoorbell
+  ) {
     return;
   }
 
@@ -22,21 +25,20 @@ module.exports = function (accessory) {
   });
 
   // Setup and configure the camera service
-  let videoDoorbellSource = null;
-  if (platform.config.raspberryPiCamera) {
-    videoDoorbellSource = new CameraSource(hap, platform.config.video);
-  } else {
-    videoDoorbellSource = new FFMPEG(hap, {
-      videoConfig: {
-        source: platform.config.video.stream.replace('<your-url>', ''),
-        stillImageSource: (platform.config.video.snapshotImage.startsWith('http') ? '-i ' : '') + platform.config.video.snapshotImage,
-        maxWidth: platform.config.video.maxWidth,
-        maxHeight: platform.config.video.maxHeight,
-        maxFPS: platform.config.video.maxFPS,
-        vcodec: platform.config.video.vcodec,
-      },
-    }, platform.log, 'ffmpeg');
-  }
+  const videoDoorbellSource = (
+    platform.config.raspberryPiCamera
+      ? new CameraSource(hap, platform.config.video)
+      : new FFMPEG(hap, {
+        videoConfig: {
+          source: platform.config.video.stream.replace('<your-url>', ''),
+          stillImageSource: (platform.config.video.snapshotImage.startsWith('http') ? '-i ' : '') + platform.config.video.snapshotImage,
+          maxWidth: platform.config.video.maxWidth,
+          maxHeight: platform.config.video.maxHeight,
+          maxFPS: platform.config.video.maxFPS,
+          vcodec: platform.config.video.vcodec,
+        },
+      }, platform.log, 'ffmpeg')
+  );
 
   videodoorbellAccessory.configureCameraSource(videoDoorbellSource);
 

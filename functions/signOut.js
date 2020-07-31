@@ -1,4 +1,4 @@
-module.exports = function () {
+module.exports = function signOut() {
   const platform = this;
 
   // Clears the session information

@@ -36,19 +36,21 @@ function getGrantFormParameters(platform) {
   }
 }
 
-module.exports = function (callback) {
+module.exports = function signIn(callback) {
   const platform = this;
 
   // Validates the configuration
   if (!platform.config.authUri) {
     platform.log('No Authentication URI for nello.io provided.');
-    return callback(false);
+    callback(false);
+    return;
   }
 
   const grantFormParameters = getGrantFormParameters(platform);
 
   if (!grantFormParameters) {
-    return callback(false);
+    callback(false);
+    return;
   }
 
   // Sends the login request to the API
@@ -63,21 +65,22 @@ module.exports = function (callback) {
     form: grantFormParameters,
   }, (error, response, body) => {
     // Checks if the API returned a positive result
-    if (error || response.statusCode != 200 || !body || !body.access_token) {
+    if (error || response.statusCode !== 200 || !body || !body.access_token) {
       if (error) {
         platform.log(`Error while signing in. Error: ${error}`);
-      } else if (response.statusCode != 200) {
+      } else if (response.statusCode !== 200) {
         platform.log(`Error while signing in. Status Code: ${response.statusCode}`);
       } else if (!body || !body.access_token) {
         platform.log(`Error while signing in. Could not get access token from response: ${JSON.stringify(body)}`);
       }
       platform.signOut();
-      return callback(false);
-    }
+      callback(false);
+    } else {
+      // Stores the token information
+      platform.token = body;
+      platform.log('Signed in.');
 
-    // Stores the token information
-    platform.token = body;
-    platform.log('Signed in.');
-    return callback(true);
+      callback(true);
+    }
   });
 };

@@ -3,18 +3,6 @@ const pluginName = 'homebridge-nello';
 const platformName = 'NelloPlatform';
 
 /**
- * Defines the export of the platform module.
- * @param homebridge The homebridge object that contains all classes, objects and functions for communicating with HomeKit.
- */
-module.exports = function (homebridge) {
-  // Gets the classes required for implementation of the plugin
-  homebridgeObj = homebridge;
-
-  // Registers the dynamic nello platform, as the locks are read from the API and created dynamically
-  homebridge.registerPlatform(pluginName, platformName, NelloPlatform, true);
-};
-
-/**
  * Initializes a new platform instance for the nello plugin.
  * @param log The logging function.
  * @param config The configuration that is passed to the plugin (from the config.json file).
@@ -52,8 +40,10 @@ function NelloPlatform(log, config, api) {
   platform.config.webhookServerPort = platform.config.webhookServerPort || 5000;
   platform.config.authType = platform.config.authType || 'password';
   platform.config.lockTimeout = platform.config.lockTimeout || 5000;
-  platform.config.locationUpdateInterval = platform.config.locationUpdateInterval == 0 ? 0 : (platform.config.locationUpdateInterval || 3600000);
-  platform.config.exposeReachability = platform.config.exposeReachability;
+  platform.config.locationUpdateInterval = platform.config.locationUpdateInterval === 0
+    ? 0
+    : (platform.config.locationUpdateInterval || 3600000);
+  // platform.config.exposeReachability = platform.config.exposeReachability;
   platform.config.motionTimeout = platform.config.motionTimeout || 5000;
   platform.config.video = platform.config.video || {};
   platform.config.video.stream = platform.config.video.stream || '-re -i';
@@ -99,21 +89,24 @@ function NelloPlatform(log, config, api) {
 NelloPlatform.prototype.signIn = require('./functions/signIn');
 
 /**
- * Signs the user out. This is a helper method that clears the session. Is called everytime an API call fails.
+ * Signs the user out. This is a helper method that clears the session.
+ * Is called everytime an API call fails.
  */
 NelloPlatform.prototype.signOut = require('./functions/signOut');
 
 /**
  * Sends a request to the API to open the lock.
  * @param locationId The ID of the location for which the lock is to be opened.
- * @param retry Determines whether the platform should retry signing in and opening the lock if the first attempt fails.
+ * @param retry Determines whether the platform should retry signing in
+ *              and opening the lock if the first attempt fails.
  * @param callback The callback function that gets a boolean value indicating success or failure.
  */
 NelloPlatform.prototype.open = require('./functions/open');
 
 /**
  * Sends a request to the API to get all locations.
- * @param retry Determines whether the platform should retry signing in and getting the locations if the first attempt fails.
+ * @param retry Determines whether the platform should retry signing in
+ *              and getting the locations if the first attempt fails.
  * @param callback The callback function that gets a boolean value indicating success or failure.
  */
 NelloPlatform.prototype.updateLocations = require('./functions/updateLocations');
@@ -122,7 +115,8 @@ NelloPlatform.prototype.updateLocations = require('./functions/updateLocations')
  * Sends a request to the API to update the webhook URI.
  * @param locationId The ID of the location for which the webhook is to be updated.
  * @param uri The URI of the new webhook.
- * @param retry Determines whether the platform should retry signing in and updating the webhook if the first attempt fails.
+ * @param retry Determines whether the platform should retry signing in
+ *              and updating the webhook if the first attempt fails.
  * @param callback The callback function that gets a boolean value indicating success or failure.
  */
 NelloPlatform.prototype.updateWebhook = require('./functions/updateWebhook');
@@ -160,3 +154,17 @@ NelloPlatform.prototype.configureAccessory = require('./functions/configureAcces
  * @param locationId The ID of the location for which the accessory is to be removed.
  */
 NelloPlatform.prototype.removeAccessory = require('./functions/removeAccessory');
+
+/**
+ * Defines the export of the platform module.
+ * @param homebridge The homebridge object that contains all classes, objects,
+ * and functions for communicating with HomeKit.
+ */
+module.exports = function homebridgeNello(homebridge) {
+  // Gets the classes required for implementation of the plugin
+  homebridgeObj = homebridge;
+
+  // Registers the dynamic nello platform, as the locks are
+  // read from the API and created dynamically
+  homebridge.registerPlatform(pluginName, platformName, NelloPlatform, true);
+};
