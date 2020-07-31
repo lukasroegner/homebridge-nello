@@ -1,6 +1,6 @@
 {
   "name": "homebridge-nello",
-  "version": "0.4.5",
+  "version": "0.5.0",
   "description": "Plugin for using the smart intercom system nello.io in homebridge.",
   "license": "MIT",
   "keywords": [
@@ -10,11 +10,19 @@
     "nello",
     "nello.io"
   ],
+  "scripts": {
+    "lint": "eslint index.js ./functions/ --fix"
+  },
   "dependencies": {
-    "express": "^4.16.4",
+    "express": "^4.17.1",
     "ip": "^1.1.5",
-    "request": "^2.88.0",
-    "socket.io-client": "^2.1.1"
+    "request": "^2.88.2",
+    "socket.io-client": "^2.3.0"
+  },
+  "devDependencies": {
+    "eslint": "^7.5.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0"
   },
   "repository": {
     "type": "git",
@@ -24,7 +32,7 @@
     "url": "http://github.com/lukasroegner/homebridge-nello/issues"
   },
   "engines": {
-    "node": ">=0.12.0",
-    "homebridge": ">=0.2.0"
+    "node": ">=12",
+    "homebridge": ">=1.1.1"
   }
 }

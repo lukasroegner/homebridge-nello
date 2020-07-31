@@ -1,58 +1,62 @@
 const { FFMPEG } = require('../ffmpeg');
 const CameraSource = require('../CameraSource');
 
-module.exports = function (accessory) {
-    const platform = this;
-    const { UUIDGen, Accessory, Service, Characteristic, Categories, hap } = platform;
+module.exports = function addCamera(accessory) {
+  const platform = this;
+  const {
+    UUIDGen, Accessory, Service, Characteristic, Categories, hap,
+  } = platform;
 
-    if (!(platform.config.videoDoorbell || platform.config.raspberryPiCamera) || accessory.videoDoorbell) {
-        return;
-    }
+  if (
+    !(platform.config.videoDoorbell || platform.config.raspberryPiCamera)
+    || accessory.videoDoorbell
+  ) {
+    return;
+  }
 
-    var videoDoorbellName = accessory.displayName + " Camera";
-    var uuid = UUIDGen.generate(videoDoorbellName);
-    var videodoorbellAccessory = new Accessory(videoDoorbellName, uuid, Categories.VIDEO_DOORBELL);
+  const videoDoorbellName = `${accessory.displayName} Camera`;
+  const uuid = UUIDGen.generate(videoDoorbellName);
+  const videodoorbellAccessory = new Accessory(videoDoorbellName, uuid, Categories.VIDEO_DOORBELL);
 
-    var primaryService = new Service.Doorbell(videoDoorbellName);
-    primaryService.getCharacteristic(Characteristic.ProgrammableSwitchEvent).on('get', function (callback) {
-        // primaryService.getCharacteristic(Characteristic.ProgrammableSwitchEvent).setValue(0);
-        callback(null, 0);
-    });
+  const primaryService = new Service.Doorbell(videoDoorbellName);
+  primaryService.getCharacteristic(Characteristic.ProgrammableSwitchEvent).on('get', (callback) => {
+    // primaryService.getCharacteristic(Characteristic.ProgrammableSwitchEvent).setValue(0);
+    callback(null, 0);
+  });
 
-    // Setup and configure the camera service
-    var videoDoorbellSource = null;
-    if (platform.config.raspberryPiCamera) {
-        videoDoorbellSource = new CameraSource(hap, platform.config.video);
-    } else {
-        videoDoorbellSource = new FFMPEG(hap, {
-            videoConfig: {
-                source: platform.config.video.stream.replace('<your-url>', ''),
-                stillImageSource: (platform.config.video.snapshotImage.startsWith('http') ? '-i ' : '') + platform.config.video.snapshotImage,
-                maxWidth: platform.config.video.maxWidth,
-                maxHeight: platform.config.video.maxHeight,
-                maxFPS: platform.config.video.maxFPS,
-                vcodec: platform.config.video.vcodec
-            }
-        }, platform.log, 'ffmpeg');
-    }
+  // Setup and configure the camera service
+  const videoDoorbellSource = (
+    platform.config.raspberryPiCamera
+      ? new CameraSource(hap, platform.config.video)
+      : new FFMPEG(hap, {
+        videoConfig: {
+          source: platform.config.video.stream.replace('<your-url>', ''),
+          stillImageSource: (platform.config.video.snapshotImage.startsWith('http') ? '-i ' : '') + platform.config.video.snapshotImage,
+          maxWidth: platform.config.video.maxWidth,
+          maxHeight: platform.config.video.maxHeight,
+          maxFPS: platform.config.video.maxFPS,
+          vcodec: platform.config.video.vcodec,
+        },
+      }, platform.log, 'ffmpeg')
+  );
 
-    videodoorbellAccessory.configureCameraSource(videoDoorbellSource);
+  videodoorbellAccessory.configureCameraSource(videoDoorbellSource);
 
-    // Setup HomeKit doorbell service
-    videodoorbellAccessory.addService(primaryService);
+  // Setup HomeKit doorbell service
+  videodoorbellAccessory.addService(primaryService);
 
-    videodoorbellAccessory
-        .getService(Service.AccessoryInformation)
-        .setCharacteristic(Characteristic.Manufacturer, "nello.io")
-        .setCharacteristic(Characteristic.Model, "Nello One")
-        .setCharacteristic(Characteristic.SerialNumber, accessory.context.locationId);
+  videodoorbellAccessory
+    .getService(Service.AccessoryInformation)
+    .setCharacteristic(Characteristic.Manufacturer, 'nello.io')
+    .setCharacteristic(Characteristic.Model, 'Nello One')
+    .setCharacteristic(Characteristic.SerialNumber, accessory.context.locationId);
 
-    // Identify
-    videodoorbellAccessory.on('identify', function (a, callback) {
-        // primaryService.getCharacteristic(Characteristic.ProgrammableSwitchEvent).setValue(0);
-        callback();
-    });
+  // Identify
+  videodoorbellAccessory.on('identify', (a, callback) => {
+    // primaryService.getCharacteristic(Characteristic.ProgrammableSwitchEvent).setValue(0);
+    callback();
+  });
 
-    accessory.videoDoorbell = primaryService;
-    platform.api.publishCameraAccessories(platform, [videodoorbellAccessory]);
-}
+  accessory.videoDoorbell = primaryService;
+  platform.api.publishCameraAccessories(platform, [videodoorbellAccessory]);
+};
