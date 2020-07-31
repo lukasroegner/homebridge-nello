@@ -1,3 +1,4 @@
+/* eslint-disable */
 //Source: https://github.com/moritzmhmk/homebridge-camera-rpi/blob/master/CameraSource.js
 
 var ip = require('ip')
