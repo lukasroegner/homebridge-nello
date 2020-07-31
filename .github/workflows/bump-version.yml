@@ -1,0 +1,34 @@
+name: bump-version
+on: 
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version (options: major, minor, patch, x.x.x)'     
+        required: true
+        default: patch
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+      - id: version
+        run: |
+          VERSION=$(npm version ${{ github.event.inputs.version }})
+          echo "::set-output name=VERSION::$VERSION"
+      - run: git push --tags
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.VERSION }}
+          release_name: ${{ steps.version.outputs.VERSION }}
+          body: ${{ steps.version.outputs.VERSION }}
+          draft: true
+          prerelease: false

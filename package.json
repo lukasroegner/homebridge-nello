@@ -11,7 +11,8 @@
     "nello.io"
   ],
   "scripts": {
-    "lint": "eslint index.js ./functions/ --fix"
+    "lint": "eslint index.js ./functions/",
+    "format": "eslint index.js ./functions/ --fix"
   },
   "dependencies": {
     "express": "^4.17.1",
