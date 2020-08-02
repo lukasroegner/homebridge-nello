@@ -1,7 +1,11 @@
 import type { Service, API } from 'homebridge';
 
 /** Leaves the lock unsecured for some time (the lock timeout) */
-export const lockUnlock = (service: Service, timeoutMilliseconds: number, api: API): void => {
+export const simulateLockUnlock = (
+  service: Service,
+  timeoutMilliseconds: number,
+  api: API,
+): void => {
   const { Characteristic } = api.hap;
 
   service.setCharacteristic(

@@ -1,5 +1,5 @@
-import type { PlatformAccessory, WithUUID } from 'homebridge';
 import type { Service as HAPService } from 'hap-nodejs';
+import type { PlatformAccessory, WithUUID } from 'homebridge';
 
 export const getAccessoryService = (
   accessory: PlatformAccessory,

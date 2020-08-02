@@ -1,4 +1,7 @@
+import path from 'path';
+
 import type { PluginIdentifier, PlatformName } from 'homebridge';
+
 import type { ResolvedConfig } from './lib/resolveConfig';
 
 export const PLUGIN_NAME: PluginIdentifier = 'homebridge-nello';
@@ -34,10 +37,11 @@ export const DEFAULT_CONFIG: ResolvedConfig = {
     alwaysOpenSwitch: false,
     publicWebhookUrl: '',
     webhookServerPort: 5000,
+    dryRun: false,
   },
   video: {
-    stream: '-re -i',
-    snapshotImage: 'http://via.placeholder.com/1280x720',
+    stream: `-re -loop 1 -i ${path.resolve(__dirname, '../assets/nello.png')}`,
+    snapshotImage: `-i ${path.resolve(__dirname, '../assets/nello.png')}`,
     maxWidth: 1280,
     maxHeight: 720,
     maxFPS: 30,
@@ -117,6 +121,9 @@ export type NelloPlatformConfig = {
    * In order to prevent duplicated notification you should enter the user name of
    * this HomeKit account. Default value is undefined. */
   homekitUser?: string
+
+  /** Do not actually open the door, only log. Useful for testing. */
+  dryRun?: boolean
 };
 
 export type NelloVideoConfig = {
@@ -124,7 +131,12 @@ export type NelloVideoConfig = {
    * Enter a stream url of e.g. your RaspberryPi camera or leave it blank
    * if you don't have one */
   stream?: string
-  /** You can set an image which will be shown as camera output */
+  /**
+   * Set to either a URL or '-i <absolute-path-to-custom-local-image>'
+   *
+   * The path MUST start with `/` and not `~` or be any other relative path
+   * If you use an https:// address, make sure that ffmpeg is compiled with openssl
+   */
   snapshotImage?: string
   /** Maximum width of the stream */
   maxWidth?: number

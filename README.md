@@ -58,14 +58,6 @@ This is the basic configuration required to only expose the door lock:
 Look at the docs for more options to configure motion sensors, the video doorbell,
 a custom webhook server, automation helper switches, and configure reachability.
 
-**Troubleshooting Guide for the video configuration:**
-
-* Make sure that you either use FFmpeg command line arguments for the `snapshotImage` property (e.g. `-i ...`) or provide a URL. If you use an https:// address, make sure that you compiled FFmpeg with openssl (which is not the case when you followed the installtion instructions for Raspberry PI from <https://github.com/KhaosT/homebridge-camera-ffmpeg>).
-* If you want to use a local image for the `snapshotImage` property, please set the property to `-i <absolute-path-to-your-image>`. Don't use `~`, use an absolute path and start your path with `/`.
-* We included a nice static image, which you can use. Therefore, set the `snapshotImage` property to `-i <absolute-path-to-your-global-node-modules>/homebridge-nello/assets/nello.png`. The path to your global node modules varies based on the OS and the installation method. On a Raspberry PI, it is usually in `/opt/node/lib/node_modules`.
-* If you want to use a static image for a fake video stream, set the `stream` property to `-re -loop 1 -i <absolute-path-to-your-image>`
-* If you still have troubles configuring the camera, feel free to create issues. Please provide your configuration.
-
 **You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the Installation part.**
 
 ## Implementation Details

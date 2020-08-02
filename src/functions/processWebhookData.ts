@@ -1,32 +1,6 @@
 import type { NelloPlatform } from '../NelloPlatform';
+import { WebhookData, WebhookAction } from '../lib/WebhookData';
 import { getAccessoryService } from '../lib/getAccessoryService';
-
-// https://nellopublicapi.docs.apiary.io/#reference/0/locations-collection/add-/-update-webhook
-
-export enum WebhookAction {
-  /** When the door opens */
-  Swipe = 'swipe',
-  /** When the door is opened because of the Homezone Unlock feature (with a bell ring) */
-  HomeZoneUnlock = 'geo',
-  /** When the door is opened because of a Time Window (with a bell ring) */
-  TimeWindow = 'tw',
-  /** When nello detects a bell ring, but neither a Time Window
-   * nor a Homezone Event caused the door to be opened, */
-  DidNotOpen = 'deny',
-}
-
-export type WebhookData = {
-  action: WebhookAction
-  data: {
-    location_id: string
-    name: string
-  }
-} | {
-  action: WebhookAction.DidNotOpen
-  data: {
-    location_id: string
-  }
-};
 
 export const processWebhookData = async (
   platform: NelloPlatform,
@@ -58,17 +32,19 @@ export const processWebhookData = async (
     return;
   }
 
+  const videoDoorbell = platform.getVideoDoorbell(data.data.location_id);
+
   const lockMechanismService = getAccessoryService(accessory, Service.LockMechanism);
 
   switch (data.action) {
     case WebhookAction.HomeZoneUnlock:
     case WebhookAction.TimeWindow:
-      platform.lockUnlock(lockMechanismService);
+      platform.simulateLockUnlock(lockMechanismService);
       break;
 
     case WebhookAction.Swipe:
       if (platform.config.common.homekitUser !== data.data.name) {
-        platform.lockUnlock(lockMechanismService);
+        platform.simulateLockUnlock(lockMechanismService);
       }
       break;
 
@@ -76,7 +52,7 @@ export const processWebhookData = async (
       if (accessory.context.alwaysOpen) {
         try {
           await platform.open(accessory.context.locationId);
-          platform.lockUnlock(lockMechanismService);
+          platform.simulateLockUnlock(lockMechanismService);
         } catch (error) {
           lockMechanismService.setCharacteristic(
             Characteristic.LockTargetState,
@@ -86,10 +62,11 @@ export const processWebhookData = async (
         return;
       }
 
-      if (accessory.context.videoDoorbell) {
-        getAccessoryService(accessory.context.videoDoorbell, Service.Doorbell).getCharacteristic(
-          Characteristic.ProgrammableSwitchEvent,
-        ).setValue(0);
+      if (videoDoorbell) {
+        getAccessoryService(videoDoorbell, Service.Doorbell)
+          .getCharacteristic(
+            Characteristic.ProgrammableSwitchEvent,
+          ).setValue(0);
       }
 
       // Trigger the motion sensor

@@ -105,14 +105,6 @@
   }</code></pre>
 				<p>Look at the docs for more options to configure motion sensors, the video doorbell,
 				a custom webhook server, automation helper switches, and configure reachability.</p>
-				<p><strong>Troubleshooting Guide for the video configuration:</strong></p>
-				<ul>
-					<li>Make sure that you either use FFmpeg command line arguments for the <code>snapshotImage</code> property (e.g. <code>-i ...</code>) or provide a URL. If you use an https:// address, make sure that you compiled FFmpeg with openssl (which is not the case when you followed the installtion instructions for Raspberry PI from <a href="https://github.com/KhaosT/homebridge-camera-ffmpeg">https://github.com/KhaosT/homebridge-camera-ffmpeg</a>).</li>
-					<li>If you want to use a local image for the <code>snapshotImage</code> property, please set the property to <code>-i &lt;absolute-path-to-your-image&gt;</code>. Don&#39;t use <code>~</code>, use an absolute path and start your path with <code>/</code>.</li>
-					<li>We included a nice static image, which you can use. Therefore, set the <code>snapshotImage</code> property to <code>-i &lt;absolute-path-to-your-global-node-modules&gt;/homebridge-nello/assets/nello.png</code>. The path to your global node modules varies based on the OS and the installation method. On a Raspberry PI, it is usually in <code>/opt/node/lib/node_modules</code>.</li>
-					<li>If you want to use a static image for a fake video stream, set the <code>stream</code> property to <code>-re -loop 1 -i &lt;absolute-path-to-your-image&gt;</code></li>
-					<li>If you still have troubles configuring the camera, feel free to create issues. Please provide your configuration.</li>
-				</ul>
 				<p><strong>You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the Installation part.</strong></p>
 				<a href="#implementation-details" id="implementation-details" style="color: inherit; text-decoration: none;">
 					<h2>Implementation Details</h2>
@@ -136,8 +128,8 @@
 				</a>
 				<ul>
 					<li>All calls to the nello.io API are being sent via HTTPS.</li>
-					<li>The client secret used by this plugin has to be specified in the <code>config.json</code> on the PC/Mac/Raspberry running homebridge. Therefore, please make sure that nobody can access this device within your local network without permission.</li>
-					<li>In the Apple Home app, a lock can be easily unlocked with a single touch onto the icon. Please be careful not to open the door unintentionally.</li>
+					<li>The client secret used by this plugin has to be specified in the <code>config.json</code> on the PC/Mac/Raspberry running homebridge. Please make sure that nobody can access this device within your local network without permission.</li>
+					<li>In the Apple Home app, a lock can be easily unlocked with a single tap on the icon. Please be careful not to open the door unintentionally.</li>
 					<li>The webhook uses a relay service which is hosted by @AlexanderBabel. You can find the source code of the service here: <a href="https://github.com/AlexanderBabel/nello-backend">https://github.com/AlexanderBabel/nello-backend</a></li>
 				</ul>
 				<a href="#development" id="development" style="color: inherit; text-decoration: none;">

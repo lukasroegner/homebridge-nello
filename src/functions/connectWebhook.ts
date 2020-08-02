@@ -3,9 +3,11 @@ import io from 'socket.io-client';
 
 import type { NelloPlatform } from '../NelloPlatform';
 import { SOCKET_BACKEND } from '../config';
-import { processWebhookData, WebhookData } from './processWebhookData';
+import { WebhookData } from '../lib/WebhookData';
 
-const registerWebhook = (platform: NelloPlatform) => {
+import { processWebhookData } from './processWebhookData';
+
+const registerWebhook = (platform: NelloPlatform): Promise<string> => new Promise((resolve) => {
   const app = express();
 
   app.use(express.json());
@@ -19,16 +21,13 @@ const registerWebhook = (platform: NelloPlatform) => {
 
   app.listen(port, () => {
     platform.log(`Webhook server listening on port ${port}`);
-    platform.getLocations().forEach((location) => {
-      void platform.updateWebhook(
-        location.location_id,
-        platform.config.common.publicWebhookUrl,
-      );
-    });
+    resolve(platform.config.common.publicWebhookUrl);
   });
-};
+});
 
-const connectToWebhookRelay = (platform: NelloPlatform) => {
+const connectToWebhookRelay = (
+  platform: NelloPlatform,
+): Promise<string> => new Promise((resolve) => {
   const socket = io(SOCKET_BACKEND, { transports: ['websocket'] });
 
   socket.on('error', (err: any) => {
@@ -41,9 +40,7 @@ const connectToWebhookRelay = (platform: NelloPlatform) => {
   });
 
   socket.on('webhook', (data: { url: string }) => {
-    platform.getLocations().forEach((location) => {
-      void platform.updateWebhook(location.location_id, data.url);
-    });
+    resolve(data.url);
   });
 
   socket.on('call', (data: WebhookData) => {
@@ -51,16 +48,16 @@ const connectToWebhookRelay = (platform: NelloPlatform) => {
       void processWebhookData(platform, data);
     }
   });
-};
+});
 
 /**
  * Opens connection to the webhook backend.
  */
-export const connectWebhook = (platform: NelloPlatform): void => {
+export const connectWebhook = (platform: NelloPlatform): Promise<string> => {
   if (platform.config.common.publicWebhookUrl) {
-    registerWebhook(platform);
-  } else {
-    platform.log('Connecting to webhook relay service');
-    connectToWebhookRelay(platform);
+    return registerWebhook(platform);
   }
+
+  platform.log('Connecting to webhook relay service');
+  return connectToWebhookRelay(platform);
 };

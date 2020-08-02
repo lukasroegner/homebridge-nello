@@ -2,47 +2,31 @@ import type {
   API, DynamicPlatformPlugin, PlatformConfig, PlatformAccessory, Logging, Service,
 } from 'homebridge';
 
-import { Config } from './config';
-
-import { open } from './functions/open';
-import { updateLocations } from './functions/updateLocations';
-import { updateWebhook } from './functions/updateWebhook';
-import { updateReachability } from './functions/updateReachability';
-import { addAccessory } from './functions/addAccessory';
-import { addCamera } from './functions/addCamera';
+import { Config, PLUGIN_NAME, PLATFORM_NAME } from './config';
+import { configureAccessoryServices } from './functions/configureAccessoryServices';
 import { connectWebhook } from './functions/connectWebhook';
-import { configureAccessory } from './functions/configureAccessory';
-import { removeAccessory } from './functions/removeAccessory';
-
+import { createAccessory } from './functions/createAccessory';
+import { createOrUpdateCamera } from './functions/createOrUpdateCamera';
+import { updateLocations } from './functions/updateLocations';
+import { updateReachability } from './functions/updateReachability';
 import { APIClient } from './lib/APIClient';
-import { lockUnlock } from './lib/lockUnlock';
+import { Location } from './lib/Location';
 import { resolveConfig, ResolvedConfig } from './lib/resolveConfig';
+import { simulateLockUnlock } from './lib/simulateLockUnlock';
 
-// https://nellopublicapi.docs.apiary.io/#reference/0/locations-collection/list-locations
-export type Location = {
-  location_id: string;
-  address: {
-    city: string;
-    state: string;
-    country: string;
-    zip: string;
-    number: string;
-    street: string;
-  }
-};
-
-export type AccessoryWithContext = PlatformAccessory & {
+export type AccessoryWithContext = Omit<PlatformAccessory, 'context'> & {
   context: {
     locationId: string
     motion?: boolean
     alwaysOpen?: boolean
     reachable?: boolean
-    videoDoorbell?: PlatformAccessory
   }
 };
 
 export class NelloPlatform implements DynamicPlatformPlugin {
-  private accessories: PlatformAccessory[] = [];
+  private accessories: Record<string, AccessoryWithContext> = {};
+
+  private videoDoorbells: Record<string, PlatformAccessory> = {};
 
   private locations: Location[] = [];
 
@@ -73,6 +57,10 @@ export class NelloPlatform implements DynamicPlatformPlugin {
 
     this.config = resolvedConfig;
 
+    if (this.config.common.dryRun) {
+      this.log.warn('Operating in dry-run mode. The door will not be opened physically');
+    }
+
     if (!auth?.clientId || !auth?.clientSecret) {
       this.log.error('No clientId and/or clientSecret for nello.io provided.');
       return;
@@ -80,55 +68,56 @@ export class NelloPlatform implements DynamicPlatformPlugin {
 
     this.client = new APIClient(
       'https://public-api.nello.io/v1',
-      // log
-      (message) => {
-        this.log(message);
-      },
-      // onSuccess
-      () => { this.updateReachability(); },
-      // onError
-      (message) => {
-        this.log.warn(message);
-        this.signOut();
-      },
+      this.log,
       {
         grant_type: 'client_credentials',
         client_id: auth.clientId,
         client_secret: auth.clientSecret,
       },
+      (reachable) => { updateReachability(this, reachable); },
     );
 
     // Subscribes to the event that is raised when homebrige finished loading cached accessories
-    this.api.on('didFinishLaunching', async () => {
+    this.api.on('didFinishLaunching', () => {
       this.log('Cached accessories loaded.');
-
-      // Initially updates the locations to get the locks
-      await this.updateLocations();
-
-      // Starts the timer for updating locations (i.e. adding and removing locks of the user)
-      if (this.config.common.locationUpdateInterval > 0) {
-        setInterval(() => {
-          void this.updateLocations();
-        }, this.config.common.locationUpdateInterval);
-      }
-
-      // Connect to backend
-      this.connectWebhook();
+      void this.startup();
     });
   }
 
-  // called everytime an API call fails.
-  signOut(): void {
-    this.client.resetToken();
-    this.setLocations([]);
+  private async startup() {
+    // Initially updates the locations to get the locks
+    await this.updateLocations();
+
+    // Starts the timer for updating locations (i.e. adding and removing locks of the user)
+    if (this.config.common.locationUpdateInterval > 0) {
+      setInterval(() => {
+        void this.updateLocations();
+      }, this.config.common.locationUpdateInterval);
+    }
+
+    const webhookUrl = await connectWebhook(this);
+
+    await Promise.all(
+      this.getLocations().map((location) => this.updateWebhook(location, webhookUrl)),
+    );
   }
 
-  lockUnlock(service: Service): void {
-    lockUnlock(service, this.config.common.lockTimeout, this.api);
+  private async updateLocations(): Promise<void> {
+    try {
+      this.locations = await updateLocations(this);
+    } catch (e) {
+      this.log.warn('Getting locations from nello.io failed', e);
+    }
   }
 
-  setLocations(locations: Location[]): void {
-    this.locations = locations;
+  private async updateWebhook(location: Location, webhookUri: string): Promise<void> {
+    this.log(`Updating webhook for door with ID ${location.location_id} to ${webhookUri}.`);
+    try {
+      await this.client.updateWebhook(location, webhookUri);
+      this.log(`Updated webhook for door with ID ${location.location_id} to ${webhookUri}.`);
+    } catch (e) {
+      this.log('Updating webhook failed.');
+    }
   }
 
   getLocations(): Location[] {
@@ -139,24 +128,24 @@ export class NelloPlatform implements DynamicPlatformPlugin {
     return this.getLocations().find((location) => location.location_id === locationId);
   }
 
-  getLocationAccessories(locationId: string): AccessoryWithContext[] {
-    return this.getAccessories().filter((a) => a.context.locationId === locationId);
-  }
-
   getLocationAccessory(locationId: string): AccessoryWithContext | undefined {
-    return this.getLocationAccessories(locationId)[0];
+    return this.accessories[locationId];
   }
 
   getAccessories(): AccessoryWithContext[] {
-    return this.accessories as AccessoryWithContext[];
+    return Object.values(this.accessories);
   }
 
-  pushAccessory(accessory: PlatformAccessory): void {
-    this.accessories.push(accessory);
+  addVideoDoorbell(location: Location, doorbell: PlatformAccessory): void {
+    this.videoDoorbells[location.location_id] = doorbell;
   }
 
-  replaceAccessories(accessories: PlatformAccessory[]): void {
-    this.accessories = accessories;
+  getVideoDoorbell(locationId: string): PlatformAccessory | undefined {
+    return this.videoDoorbells[locationId];
+  }
+
+  simulateLockUnlock(service: Service): void {
+    simulateLockUnlock(service, this.config.common.lockTimeout, this.api);
   }
 
   async open(locationId: string): Promise<void> {
@@ -168,55 +157,50 @@ export class NelloPlatform implements DynamicPlatformPlugin {
       return;
     }
 
-    await open(this, location);
-  }
-
-  async updateLocations(): Promise<void> {
-    await updateLocations(this);
-  }
-
-  async updateWebhook(locationId: string, webhookUri: string): Promise<void> {
-    const location = this.getLocation(locationId);
-
-    if (!location) {
-      this.log(`Updating webhook for ${locationId} failed. The location is not available anymore.`);
+    if (this.config.common.dryRun) {
+      this.log(`DRY-RUN (Not Executed): Opened door at location with ID ${location.location_id}.`);
       return;
     }
 
-    await updateWebhook(this, location, webhookUri);
-  }
-
-  updateReachability(): void {
-    updateReachability(this);
-  }
-
-  addAccessory(locationId: string): void {
-    const location = this.getLocation(locationId);
-
-    if (!location) {
-      this.log(`Error while adding new accessory with location ID ${locationId}: not received from nello.io.`);
-      return;
+    try {
+      await this.client.openLocation(location);
+      this.log(`Opened door at location with ID  ${location.location_id}.`);
+    } catch (e) {
+      this.log.warn(`Opening door at location with ID ${location.location_id} failed`);
     }
-
-    addAccessory(this, location);
   }
 
-  addCamera(accessory: AccessoryWithContext): void {
-    addCamera(this, accessory);
+  createAccessory(location: Location): AccessoryWithContext {
+    const accessory = createAccessory(this, location);
+    this.accessories[location.location_id] = accessory;
+    return accessory;
   }
 
-  connectWebhook(): void {
-    connectWebhook(this);
+  createOrUpdateCamera(location: Location, accessory: AccessoryWithContext): void {
+    createOrUpdateCamera(this, location, accessory);
+  }
+
+  removeAccessory(locationId: string): void {
+    this.log(`Removing accessory with location ID ${locationId}`);
+    if (this.accessories[locationId]) {
+      delete this.accessories[locationId];
+      this.api.unregisterPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
+        this.accessories[locationId],
+      ]);
+      this.log(`Removed accessory with location ID ${locationId}`);
+    }
   }
 
   /**
    * Configures a previously cached accessory.
    */
   configureAccessory(accessory: AccessoryWithContext): void {
-    configureAccessory(this, accessory);
+    this.accessories[accessory.context.locationId] = accessory;
+    this.configureAccessoryServices(accessory);
   }
 
-  removeAccessory(locationId: string): void {
-    removeAccessory(this, locationId);
+  // also called from createAccessory
+  configureAccessoryServices(accessory: AccessoryWithContext): void {
+    configureAccessoryServices(this, accessory);
   }
 }

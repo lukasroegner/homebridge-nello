@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
 
 import { Config } from './config';
 
@@ -22,6 +22,7 @@ const config: Config = {
     clientSecret: getEnv('CLIENT_SECRET'),
   },
   common: {
+    dryRun: true,
     alwaysOpenSwitch: true,
     exposeReachability: true,
     motionSensor: true,
@@ -30,7 +31,6 @@ const config: Config = {
   },
   video: {
     debug: true,
-    snapshotImage: `-i ${path.resolve(__dirname, '../assets/nello.png')}`,
     ffmpegBinary: path.resolve(__dirname, '../homebridge-test-storage/ffmpeg'),
   },
 };
@@ -41,11 +41,11 @@ const randomBetween = (min: number, max: number): number => Math.floor(
 
 // xxx-xx-xxx
 const pin = `${randomBetween(100, 999)}-${randomBetween(10, 99)}-${randomBetween(100, 999)}`;
-
+const mac = Array.from({ length: 6 }).map(() => randomBetween(10, 99)).join(':');
 const homebridgeConfig = {
   bridge: {
     name: 'HomebridgeNelloTestServer',
-    username: '95:86:53:6E:D9:12',
+    username: mac,
     port: 51826,
     pin,
   },
@@ -60,6 +60,6 @@ const homebridgeConfig = {
 
 fs.writeFileSync(
   path.join(__dirname, '../homebridge-test-storage/config.json'),
-  JSON.stringify(homebridgeConfig),
+  JSON.stringify(homebridgeConfig, null, 2),
   'utf8',
 );

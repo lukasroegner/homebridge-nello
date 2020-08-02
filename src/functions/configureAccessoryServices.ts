@@ -1,12 +1,13 @@
 import type {
+  Service as HAPService,
+} from 'hap-nodejs';
+import type {
   WithUUID,
   CharacteristicValue,
   CharacteristicGetCallback,
   CharacteristicSetCallback,
 } from 'homebridge';
-import type {
-  Service as HAPService,
-} from 'hap-nodejs';
+
 import type { NelloPlatform, AccessoryWithContext } from '../NelloPlatform';
 import { getAccessoryService } from '../lib/getAccessoryService';
 
@@ -21,7 +22,7 @@ const removeServiceIfExists = (
   }
 };
 
-export const configureAccessory = (
+export const configureAccessoryServices = (
   platform: NelloPlatform,
   accessory: AccessoryWithContext,
 ): void => {
@@ -47,7 +48,7 @@ export const configureAccessory = (
     removeServiceIfExists(accessory, Service.MotionSensor);
   }
 
-  // Add motion sensor
+  // Add switch
   if (platform.config.common.alwaysOpenSwitch) {
     accessory.context.alwaysOpen = accessory.context.alwaysOpen || false;
     getAccessoryService(accessory, Service.Switch)
@@ -55,15 +56,21 @@ export const configureAccessory = (
       .on('get', (callback: CharacteristicGetCallback) => {
         callback(null, Boolean(accessory.context.alwaysOpen));
       })
-      .on('set', (toggle: CharacteristicValue, callback: CharacteristicSetCallback) => {
-        accessory.context.alwaysOpen = !!toggle;
+      .on('set', (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
+        const alwaysOpen = !!value;
+        if (alwaysOpen) {
+          platform.log('Switch change: homebridge will open for any ring');
+        } else {
+          platform.log('Switch change: homebridge will NOT open for any ring');
+        }
+        accessory.context.alwaysOpen = alwaysOpen;
         callback();
       });
   } else {
     removeServiceIfExists(accessory, Service.Switch);
   }
 
-  // Sets the default values for reachability and activity
+  // Initial value
   accessory.context.reachable = true;
 
   // Updates the lock mechanism
@@ -81,7 +88,7 @@ export const configureAccessory = (
       if (value === Characteristic.LockTargetState.UNSECURED) {
         try {
           await platform.open(accessory.context.locationId);
-          platform.lockUnlock(lockMechanismService);
+          platform.simulateLockUnlock(lockMechanismService);
         } catch (e) {
           // Updates the reachability and reverts the target state of the lock
           lockMechanismService.setCharacteristic(
@@ -91,7 +98,4 @@ export const configureAccessory = (
         }
       }
     });
-
-  // Adds the accessory
-  platform.pushAccessory(accessory);
 };

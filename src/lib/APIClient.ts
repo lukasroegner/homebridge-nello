@@ -1,31 +1,94 @@
+import type { Logging } from 'homebridge';
 import request from 'request';
+
 import { AUTH_URI } from '../config';
+
+import { Location } from './Location';
+import { WebhookAction } from './WebhookData';
 
 export class APIClient {
   constructor(
     private baseUrl: string,
-    private log: (message: string) => void,
-    private onSuccess: () => void,
-    private onError: (message: string) => void,
+    private log: Logging,
     private grantFormParameters: Record<string, string>,
+    private updateReachability: (reachable: boolean) => void,
   ) {
   }
 
   private token: string | undefined;
 
-  isSignedIn(): boolean {
-    return this.token !== undefined;
+  private timeoutUntil: Date | undefined;
+
+  // https://nellopublicapi.docs.apiary.io/#reference/0/locations-collection/open-door
+  async openLocation(location: Location): Promise<void> {
+    await this.request(
+      'PUT',
+      `/locations/${location.location_id}/open/`,
+    );
   }
 
-  setToken(token: string): void {
+  // https://nellopublicapi.docs.apiary.io/#reference/0/locations-collection/list-locations
+  async getLocations(): Promise<Location[]> {
+    const response = await this.request<{ data: Location[] }>('GET', '/locations/');
+
+    if (!response?.data) {
+      throw new Error(`Could not get locations from response: ${JSON.stringify(response)}`);
+    }
+
+    return response.data;
+  }
+
+  // https://nellopublicapi.docs.apiary.io/#reference/0/locations-collection/add-/-update-webhook
+  async updateWebhook(location: Location, uri: string): Promise<void> {
+    return this.request(
+      'PUT',
+      `/locations/${location.location_id}/webhook/`,
+      {
+        url: uri,
+        actions: Object.values(WebhookAction),
+      },
+    );
+  }
+
+  private async request<TResponse = undefined, TBody = undefined>(
+    method: 'GET' | 'POST' | 'PUT',
+    path: string,
+    body: TBody | undefined = undefined,
+    retried = false,
+  ): Promise<TResponse> {
+    const url = `${retried ? '' : this.baseUrl}${path}`;
+    const logPart = `${method} ${url}`;
+    this.log(`START Request: ${logPart}`);
+
+    try {
+      if (!this.token) {
+        this.log('Not signed in, requesting sign-in');
+        await this.signIn();
+      }
+
+      const response = await this.baseRequest<TResponse, TBody>(method, url, body);
+
+      this.log(`COMPLETE Request: ${logPart}`);
+
+      return response;
+    } catch (e) {
+      if (!retried) {
+        this.log(`RETRY Request: ${logPart}`);
+        return this.request(method, url, body, true);
+      }
+      throw e;
+    }
+  }
+
+  private setToken(token: string): void {
     this.token = token;
   }
 
-  resetToken(): void {
+  private resetToken(): void {
     this.token = undefined;
   }
 
-  async signIn(): Promise<void> {
+  private async signIn(): Promise<void> {
     this.resetToken();
 
     // https://nelloauth.docs.apiary.io/#reference/0/token/
@@ -42,37 +105,11 @@ export class APIClient {
     );
 
     if (!response?.token_type || !response?.access_token) {
-      this.onError(`Error while signing in. Could not get access token from response: ${JSON.stringify(response)}`);
+      this.log.error(`Error while signing in. Could not get access token from response: ${JSON.stringify(response)}`);
       return;
     }
 
     this.setToken(`${response.token_type} ${response.access_token}`);
-  }
-
-  async request<TResponse = undefined, TBody = undefined>(
-    method: 'GET' | 'POST' | 'PUT',
-    path: string,
-    body: TBody | undefined = undefined,
-    retried = false,
-  ): Promise<TResponse> {
-    const url = `${retried ? '' : this.baseUrl}${path}`;
-    const logPart = `${method} ${url}`;
-    this.log(`Request: ${logPart}`);
-
-    try {
-      if (!this.token) {
-        this.log('Not signed in, requesting sign-in');
-        await this.signIn();
-      }
-
-      return await this.baseRequest(method, url, body);
-    } catch (e) {
-      if (!retried) {
-        this.log(`Retrying request: ${logPart}`);
-        return this.request(method, url, body, true);
-      }
-      throw e;
-    }
   }
 
   private baseRequest<TResponse, TBody>(
@@ -81,6 +118,10 @@ export class APIClient {
     body: TBody | undefined = undefined,
     form: Record<string, string> | undefined = undefined,
   ): Promise<TResponse> {
+    if (this.timeoutUntil && new Date().valueOf() < this.timeoutUntil.valueOf()) {
+      return Promise.reject(new Error('Rate-limited, waiting...'));
+    }
+
     return new Promise((resolve, reject) => {
       request({
         uri: path,
@@ -94,13 +135,21 @@ export class APIClient {
         if (error || response.statusCode !== 200) {
           const message = `API error path=${path}, status_code=${response.statusCode}, response=${JSON.stringify(responseBody, null, 2)}`;
 
-          this.onError(message);
+          if (response.statusCode === 429) {
+            // 1 minute
+            this.timeoutUntil = new Date(new Date().valueOf() + 1 * 60 * 1000);
+          } else {
+            this.updateReachability(false);
+            this.resetToken();
+          }
 
-          reject(message);
+          this.log.warn(message);
+
+          reject(new Error(message));
           return;
         }
 
-        this.onSuccess();
+        this.updateReachability(true);
         resolve(responseBody);
       });
     });

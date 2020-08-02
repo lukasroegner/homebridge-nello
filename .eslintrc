@@ -13,6 +13,22 @@
     "import/prefer-default-export": "off",
     "no-param-reassign": "warn",
     "@typescript-eslint/no-misused-promises": "warn",
-    "no-void": ["error", { "allowAsStatement": true }]
+    "no-void": ["error", { "allowAsStatement": true }],
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "unknown",
+          "parent",
+          "sibling",
+          "index"
+        ],
+        "newlines-between": "always",
+        "alphabetize": { "order":"asc" }
+      }
+    ]
   }
 }

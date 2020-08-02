@@ -1,32 +1,26 @@
 import type { CharacteristicGetCallback } from 'homebridge';
 
 import type { NelloPlatform, AccessoryWithContext } from '../NelloPlatform';
-import { PLATFORM_NAME } from '../config';
-
+import { PLUGIN_NAME } from '../config';
+import { Location } from '../lib/Location';
 import { getAccessoryService } from '../lib/getAccessoryService';
+import { Camera } from '../video/Camera';
+import { FFMPEG } from '../video/ffmpeg';
 
-import { FFMPEG } from '../ffmpeg';
-import CameraSource from '../CameraSource';
-
-/**
- * Adds a camera accessory.
- */
-export const addCamera = (platform: NelloPlatform, accessory: AccessoryWithContext): void => {
+export const createOrUpdateCamera = (
+  platform: NelloPlatform,
+  location: Location,
+  accessory: AccessoryWithContext,
+): void => {
   const {
     uuid: UUIDGen, Service, Characteristic, Categories,
   } = platform.api.hap;
   const PlatformAccessoryCtr = platform.api.platformAccessory;
 
-  if (
-    !(platform.config.common.videoDoorbell || platform.config.common.raspberryPiCamera)
-    || accessory.context.videoDoorbell
-  ) {
-    return;
-  }
-
   const videoDoorbellName = `${accessory.displayName} Camera`;
   const uuid = UUIDGen.generate(videoDoorbellName);
-  const videodoorbellAccessory = new PlatformAccessoryCtr(
+
+  const videoDoorbellAccessory = new PlatformAccessoryCtr(
     videoDoorbellName,
     uuid,
     Categories.VIDEO_DOORBELL,
@@ -44,10 +38,10 @@ export const addCamera = (platform: NelloPlatform, accessory: AccessoryWithConte
   // Setup and configure the camera service
   const videoDoorbellSource = (
     platform.config.common.raspberryPiCamera
-      ? new CameraSource(platform.api.hap, platform.config.video)
+      ? new Camera(platform.api.hap, platform.config.video)
       : new FFMPEG(platform.api.hap, {
         videoConfig: {
-          source: platform.config.video.stream.replace('<your-url>', ''),
+          source: platform.config.video.stream,
           stillImageSource: `${
             platform.config.video.snapshotImage.startsWith('http') ? '-i ' : ''
           }${
@@ -61,21 +55,14 @@ export const addCamera = (platform: NelloPlatform, accessory: AccessoryWithConte
       }, platform.log, platform.config.video.ffmpegBinary)
   );
 
-  videodoorbellAccessory.configureCameraSource(videoDoorbellSource);
+  videoDoorbellAccessory.configureCameraSource(videoDoorbellSource);
+  videoDoorbellAccessory.addService(primaryService);
 
-  // Setup HomeKit doorbell service
-  videodoorbellAccessory.addService(primaryService);
-
-  getAccessoryService(videodoorbellAccessory, Service.AccessoryInformation)
+  getAccessoryService(videoDoorbellAccessory, Service.AccessoryInformation)
     .setCharacteristic(Characteristic.Manufacturer, 'nello.io')
     .setCharacteristic(Characteristic.Model, 'Nello One')
     .setCharacteristic(Characteristic.SerialNumber, accessory.context.locationId);
 
-  // Identify
-  videodoorbellAccessory.on('identify', () => {
-    // primaryService.getCharacteristic(Characteristic.ProgrammableSwitchEvent).setValue(0);
-  });
-
-  accessory.context.videoDoorbell = videodoorbellAccessory;
-  platform.api.publishExternalAccessories(PLATFORM_NAME, [videodoorbellAccessory]);
+  platform.addVideoDoorbell(location, videoDoorbellAccessory);
+  platform.api.publishCameraAccessories(PLUGIN_NAME, [videoDoorbellAccessory]);
 };

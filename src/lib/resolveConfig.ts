@@ -50,6 +50,8 @@ export const resolveConfig = (
 
       publicWebhookUrl: common.publicWebhookUrl ?? defaultCommon.publicWebhookUrl,
       webhookServerPort: common.webhookServerPort ?? defaultCommon.webhookServerPort,
+
+      dryRun: common.dryRun ?? defaultCommon.dryRun,
     },
 
     video: {
