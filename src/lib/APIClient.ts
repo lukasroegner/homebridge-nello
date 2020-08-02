@@ -112,14 +112,19 @@ export class APIClient {
     this.setToken(`${response.token_type} ${response.access_token}`);
   }
 
-  private baseRequest<TResponse, TBody>(
+  private async baseRequest<TResponse, TBody>(
     method: 'GET' | 'POST' | 'PUT',
     path: string,
     body: TBody | undefined = undefined,
     form: Record<string, string> | undefined = undefined,
   ): Promise<TResponse> {
-    if (this.timeoutUntil && new Date().valueOf() < this.timeoutUntil.valueOf()) {
-      return Promise.reject(new Error('Rate-limited, waiting...'));
+    const now = new Date().valueOf();
+    const waitUntil = this.timeoutUntil?.valueOf();
+
+    if (waitUntil && now < waitUntil) {
+      const waitTime = waitUntil - now;
+      this.log.warn(`Rate-limited, waiting ${waitTime / 1000} seconds`);
+      await new Promise((resolve) => { setTimeout(resolve, waitTime); });
     }
 
     return new Promise((resolve, reject) => {
