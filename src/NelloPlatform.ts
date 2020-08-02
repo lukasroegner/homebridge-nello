@@ -2,7 +2,7 @@ import type {
   API, DynamicPlatformPlugin, PlatformConfig, PlatformAccessory, Logging, Service,
 } from 'homebridge';
 
-import { NelloPlatformConfig, NelloAuthConfig } from './config';
+import { Config } from './config';
 
 import { open } from './functions/open';
 import { updateLocations } from './functions/updateLocations';
@@ -16,7 +16,7 @@ import { removeAccessory } from './functions/removeAccessory';
 
 import { APIClient } from './lib/APIClient';
 import { lockUnlock } from './lib/lockUnlock';
-import { getGrantFormParameters } from './lib/getGrantFormParameters';
+import { resolveConfig, ResolvedConfig } from './lib/resolveConfig';
 
 // https://nellopublicapi.docs.apiary.io/#reference/0/locations-collection/list-locations
 export type Location = {
@@ -30,12 +30,6 @@ export type Location = {
     street: string;
   }
 };
-
-// homekitUser is the one value that is allowed to be undefined
-type ResolvedConfig = NelloPlatformConfig
-& Required<Omit<NelloPlatformConfig, 'homekitUser'>>
-// poor man's DeepRequired<T>
-& { video: Required<NelloPlatformConfig['video']> };
 
 export type AccessoryWithContext = PlatformAccessory & {
   context: {
@@ -61,24 +55,26 @@ export class NelloPlatform implements DynamicPlatformPlugin {
     config: PlatformConfig,
     public readonly api: API,
   ) {
-    const nelloConfig = config as NelloPlatformConfig;
+    const nelloConfig = config as Partial<Config>;
+    const { auth } = nelloConfig;
 
     if (!api) {
-      log.warn('Homebridge API not available, please update your homebridge version!');
+      log.error('Homebridge API not available, please update your homebridge version!');
     }
 
-    if (!config) {
-      log.warn('No config found');
+    const resolvedConfig = resolveConfig(
+      nelloConfig,
+      (msg: string) => { this.log.error(msg); },
+    );
+
+    if (!resolvedConfig) {
       return;
     }
 
-    const grantFormParameters = getGrantFormParameters(
-      config as NelloAuthConfig,
-      (msg) => { log.error(msg); },
-    );
+    this.config = resolvedConfig;
 
-    if (!grantFormParameters) {
-      log.warn('Invalid authentication config');
+    if (!auth?.clientId || !auth?.clientSecret) {
+      this.log.error('No clientId and/or clientSecret for nello.io provided.');
       return;
     }
 
@@ -86,53 +82,21 @@ export class NelloPlatform implements DynamicPlatformPlugin {
       'https://public-api.nello.io/v1',
       // log
       (message) => {
-        log(message);
+        this.log(message);
       },
       // onSuccess
       () => { this.updateReachability(); },
       // onError
       (message) => {
-        log.warn(message);
+        this.log.warn(message);
         this.signOut();
       },
-      grantFormParameters,
-    );
-
-    this.config = {
-      ...nelloConfig,
-
-      lockTimeout: nelloConfig.lockTimeout ?? 5000,
-      motionTimeout: nelloConfig.motionTimeout ?? 5000,
-
-      locationUpdateInterval: nelloConfig.locationUpdateInterval === 0
-        ? 0
-        : (nelloConfig.locationUpdateInterval ?? 3600000),
-
-      exposeReachability: nelloConfig.exposeReachability ?? false,
-
-      videoDoorbell: nelloConfig.videoDoorbell ?? false,
-      raspberryPiCamera: nelloConfig.raspberryPiCamera ?? false,
-
-      motionSensor: nelloConfig.motionSensor ?? false,
-      alwaysOpenSwitch: nelloConfig.alwaysOpenSwitch ?? false,
-
-      publicWebhookUrl: nelloConfig.publicWebhookUrl ?? '',
-      webhookServerPort: nelloConfig.webhookServerPort ?? 5000,
-
-      video: {
-        ...nelloConfig.video,
-        stream: nelloConfig.video?.stream ?? '-re -i',
-        snapshotImage: nelloConfig.video?.snapshotImage ?? 'http://via.placeholder.com/1280x720',
-        maxWidth: nelloConfig.video?.maxWidth ?? 1280,
-        maxHeight: nelloConfig.video?.maxHeight ?? 720,
-        maxFPS: nelloConfig.video?.maxFPS ?? 30,
-        vcodec: nelloConfig.video?.vcodec ?? 'h264_omx',
-        rotate: nelloConfig.video?.rotate ?? 0,
-        debug: nelloConfig.video?.debug ?? false,
-        verticalFlip: nelloConfig.video?.verticalFlip ?? false,
-        horizontalFlip: nelloConfig.video?.horizontalFlip ?? false,
+      {
+        grant_type: 'client_credentials',
+        client_id: auth.clientId,
+        client_secret: auth.clientSecret,
       },
-    };
+    );
 
     // Subscribes to the event that is raised when homebrige finished loading cached accessories
     this.api.on('didFinishLaunching', async () => {
@@ -142,10 +106,10 @@ export class NelloPlatform implements DynamicPlatformPlugin {
       await this.updateLocations();
 
       // Starts the timer for updating locations (i.e. adding and removing locks of the user)
-      if (this.config.locationUpdateInterval > 0) {
+      if (this.config.common.locationUpdateInterval > 0) {
         setInterval(() => {
           void this.updateLocations();
-        }, this.config.locationUpdateInterval);
+        }, this.config.common.locationUpdateInterval);
       }
 
       // Connect to backend
@@ -160,7 +124,7 @@ export class NelloPlatform implements DynamicPlatformPlugin {
   }
 
   lockUnlock(service: Service): void {
-    lockUnlock(service, this.config.lockTimeout, this.api);
+    lockUnlock(service, this.config.common.lockTimeout, this.api);
   }
 
   setLocations(locations: Location[]): void {

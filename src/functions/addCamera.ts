@@ -18,7 +18,7 @@ export const addCamera = (platform: NelloPlatform, accessory: AccessoryWithConte
   const PlatformAccessoryCtr = platform.api.platformAccessory;
 
   if (
-    !(platform.config.videoDoorbell || platform.config.raspberryPiCamera)
+    !(platform.config.common.videoDoorbell || platform.config.common.raspberryPiCamera)
     || accessory.context.videoDoorbell
   ) {
     return;
@@ -43,12 +43,16 @@ export const addCamera = (platform: NelloPlatform, accessory: AccessoryWithConte
 
   // Setup and configure the camera service
   const videoDoorbellSource = (
-    platform.config.raspberryPiCamera
+    platform.config.common.raspberryPiCamera
       ? new CameraSource(platform.api.hap, platform.config.video)
       : new FFMPEG(platform.api.hap, {
         videoConfig: {
           source: platform.config.video.stream.replace('<your-url>', ''),
-          stillImageSource: (platform.config.video.snapshotImage.startsWith('http') ? '-i ' : '') + platform.config.video.snapshotImage,
+          stillImageSource: `${
+            platform.config.video.snapshotImage.startsWith('http') ? '-i ' : ''
+          }${
+            platform.config.video.snapshotImage
+          }`,
           maxWidth: platform.config.video.maxWidth,
           maxHeight: platform.config.video.maxHeight,
           maxFPS: platform.config.video.maxFPS,

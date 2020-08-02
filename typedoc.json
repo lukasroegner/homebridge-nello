@@ -1,0 +1,8 @@
+{
+  "mode": "modules",
+  "out": "docs",
+  "includeVersion": true,
+  "disableSources": true,
+  "hideGenerator": true,
+  "excludeExternals": true
+}

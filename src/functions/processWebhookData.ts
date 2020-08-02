@@ -67,7 +67,7 @@ export const processWebhookData = async (
       break;
 
     case WebhookAction.Swipe:
-      if (platform.config.homekitUser !== data.data.name) {
+      if (platform.config.common.homekitUser !== data.data.name) {
         platform.lockUnlock(lockMechanismService);
       }
       break;
@@ -93,7 +93,7 @@ export const processWebhookData = async (
       }
 
       // Trigger the motion sensor
-      if (platform.config.motionSensor) {
+      if (platform.config.common.motionSensor) {
         const motionSensorService = getAccessoryService(accessory, Service.MotionSensor);
         accessory.context.motion = true;
         motionSensorService.setCharacteristic(
@@ -106,7 +106,7 @@ export const processWebhookData = async (
             Characteristic.MotionDetected,
             false,
           );
-        }, platform.config.motionTimeout);
+        }, platform.config.common.motionTimeout);
       }
 
       break;

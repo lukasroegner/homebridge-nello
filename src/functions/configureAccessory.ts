@@ -36,7 +36,7 @@ export const configureAccessory = (
     .setCharacteristic(Characteristic.SerialNumber, accessory.context.locationId);
 
   // Add motion sensor
-  if (platform.config.motionSensor) {
+  if (platform.config.common.motionSensor) {
     accessory.context.motion = false;
     getAccessoryService(accessory, Service.MotionSensor)
       .getCharacteristic(Characteristic.MotionDetected)
@@ -48,7 +48,7 @@ export const configureAccessory = (
   }
 
   // Add motion sensor
-  if (platform.config.alwaysOpenSwitch) {
+  if (platform.config.common.alwaysOpenSwitch) {
     accessory.context.alwaysOpen = accessory.context.alwaysOpen || false;
     getAccessoryService(accessory, Service.Switch)
       .getCharacteristic(Characteristic.On)

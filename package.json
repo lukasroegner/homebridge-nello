@@ -15,7 +15,8 @@
     "build": "tsc",
     "prepublishOnly": "npm run build",
     "lint": "eslint ./src/ --ext .js,.ts",
-    "format": "eslint ./src/ --ext .js,.ts --fix"
+    "format": "eslint ./src/ --ext .js,.ts --fix",
+    "docs": "typedoc --inputFiles src/config.ts"
   },
   "dependencies": {
     "express": "^4.17.1",
@@ -34,6 +35,7 @@
     "eslint-config-airbnb-typescript": "^9.0.0",
     "eslint-plugin-import": "^2.22.0",
     "homebridge": "^1.1.1",
+    "typedoc": "^0.17.8",
     "typescript": "^3.9.7"
   },
   "repository": {

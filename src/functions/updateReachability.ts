@@ -21,7 +21,7 @@ export const updateReachability = (platform: NelloPlatform): void => {
       if (!accessory.context.reachable) {
         lockCurrentStateCharacteristic.setValue(Characteristic.LockCurrentState.SECURED);
       }
-    } else if (platform.config.exposeReachability) {
+    } else if (platform.config.common.exposeReachability) {
       // If the user is not signed in, the lock state should be unknown
       lockCurrentStateCharacteristic.setValue(Characteristic.LockCurrentState.UNKNOWN);
     } else {

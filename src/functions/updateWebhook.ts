@@ -9,6 +9,7 @@ export const updateWebhook = async (
   platform.log(`Updating webhook for door with ID ${location.location_id} to ${uri}.`);
 
   try {
+    // https://nellopublicapi.docs.apiary.io/#reference/0/locations-collection/add-/-update-webhook
     await platform.client.request(
       'PUT',
       `/locations/${location.location_id}/webhook/`,

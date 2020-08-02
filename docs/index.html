@@ -1,1 +1,193 @@
-TODO
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>homebridge-nello - v0.5.0</title>
+	<meta name="description" content="Documentation for homebridge-nello - v0.5.0">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">homebridge-nello - v0.5.0</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="globals.html">Globals</a>
+				</li>
+			</ul>
+			<h1>homebridge-nello - v0.5.0</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#homebridge-nello" id="homebridge-nello" style="color: inherit; text-decoration: none;">
+					<h1>homebridge-nello</h1>
+				</a>
+				<p>This project is a homebridge plugin for the smart intercom nello.io. All your nello.io locks are dynamically added to HomeKit as lock accessories. If you want to learn more about the smart intercom nello one, please visit <a href="https://www.nello.io">https://www.nello.io</a>. There is an excellent blog post about the integration of nello into homebridge that can be found at <a href="https://www.nello.io/blog/how-to-connect-your-nello-one-to-homebridge/">https://www.nello.io/blog/how-to-connect-your-nello-one-to-homebridge/</a>.</p>
+				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
+					<h2>Installation</h2>
+				</a>
+				<p>It&#39;s recommended to create a new dedicated nello.io account in order to prevent duplicated notifications if you open the door over the Home app. It&#39;s also possible to use your own account with this plugin.</p>
+				<p>Install the plugin via npm:</p>
+				<pre><code class="language-bash">npm install homebridge-nello -g</code></pre>
+				<a href="#optional-installation-of-ffmpeg" id="optional-installation-of-ffmpeg" style="color: inherit; text-decoration: none;">
+					<h3>Optional: Installation of FFMPEG</h3>
+				</a>
+				<p><strong>Only if you want to use a camera accessory. More information in the Configuration section.</strong></p>
+				<p>You can install the default package or compile it yourself if you have a special case to fit.</p>
+				<pre><code class="language-bash">sudo apt-get install ffmpeg</code></pre>
+				<p>General information about ffmpeg can be found here <a href="https://github.com/KhaosT/homebridge-camera-ffmpeg/wiki">https://github.com/KhaosT/homebridge-camera-ffmpeg/wiki</a>)</p>
+				<p>Due to HomeKit limitations it&#39;s required to add the camera separately. Just tap on the plus button in the top right corner, choose &quot;Add Accessory&quot; and click on &quot;Don&#39;t Have a Code or Can&#39;t Scan?&quot;. In the next view you should see the camera accessory. Tap it in order to add it to the Home app. The PIN is the same as of your HomeBridge instance.</p>
+				<a href="#retrieving-a-client-id-and-client-secret-from-nello" id="retrieving-a-client-id-and-client-secret-from-nello" style="color: inherit; text-decoration: none;">
+					<h2>Retrieving a client ID and client secret from Nello</h2>
+				</a>
+				<p><strong>IMPORTANT:</strong> Please visit <a href="https://auth.nello.io/admin/">https://auth.nello.io/admin/</a> and sign in with your username and password that you also use in the nello.io app.</p>
+				<p>Fill in all required fields in the &quot;Create API client&quot; form (mark all &quot;Allowed response type&quot;s and &quot;Allowed grant type&quot;s). Copy the client ID and and client Secret paste it into the configuration as seen below.</p>
+				<p>If you are using a dedicated user account for this plugin, make sure that you use the credentials of this account to generate a client ID.</p>
+				<a href="#configuration" id="configuration" style="color: inherit; text-decoration: none;">
+					<h2>Configuration</h2>
+				</a>
+				<p>Please look at all the options and default values in the <a href="docs/modules/_config_.html">docs</a>.</p>
+				<p>This is the basic configuration required to only expose the door lock:</p>
+				<pre><code class="language-json">  {
+    <span class="hljs-attr">&quot;platforms&quot;</span>: [
+      {
+        <span class="hljs-attr">&quot;platform&quot;</span> : <span class="hljs-string">&quot;NelloPlatform&quot;</span>,
+        <span class="hljs-attr">&quot;name&quot;</span> : <span class="hljs-string">&quot;nello.io&quot;</span>,
+        <span class="hljs-attr">&quot;auth&quot;</span>: {
+          <span class="hljs-attr">&quot;clientSecret&quot;</span>: <span class="hljs-string">&quot;&lt;paste-client-secret-here&gt;&quot;</span>,
+          <span class="hljs-attr">&quot;clientId&quot;</span>: <span class="hljs-string">&quot;&lt;paste-client-id-here&gt;&quot;</span>
+        }
+      }
+    ]
+  }</code></pre>
+				<p>Look at the docs for more options to configure motion sensors, the video doorbell,
+				a custom webhook server, automation helper switches, and configure reachability.</p>
+				<p><strong>Troubleshooting Guide for the video configuration:</strong></p>
+				<ul>
+					<li>Make sure that you either use FFmpeg command line arguments for the <code>snapshotImage</code> property (e.g. <code>-i ...</code>) or provide a URL. If you use an https:// address, make sure that you compiled FFmpeg with openssl (which is not the case when you followed the installtion instructions for Raspberry PI from <a href="https://github.com/KhaosT/homebridge-camera-ffmpeg">https://github.com/KhaosT/homebridge-camera-ffmpeg</a>).</li>
+					<li>If you want to use a local image for the <code>snapshotImage</code> property, please set the property to <code>-i &lt;absolute-path-to-your-image&gt;</code>. Don&#39;t use <code>~</code>, use an absolute path and start your path with <code>/</code>.</li>
+					<li>We included a nice static image, which you can use. Therefore, set the <code>snapshotImage</code> property to <code>-i &lt;absolute-path-to-your-global-node-modules&gt;/homebridge-nello/assets/nello.png</code>. The path to your global node modules varies based on the OS and the installation method. On a Raspberry PI, it is usually in <code>/opt/node/lib/node_modules</code>.</li>
+					<li>If you want to use a static image for a fake video stream, set the <code>stream</code> property to <code>-re -loop 1 -i &lt;absolute-path-to-your-image&gt;</code></li>
+					<li>If you still have troubles configuring the camera, feel free to create issues. Please provide your configuration.</li>
+				</ul>
+				<p><strong>You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the Installation part.</strong></p>
+				<a href="#implementation-details" id="implementation-details" style="color: inherit; text-decoration: none;">
+					<h2>Implementation Details</h2>
+				</a>
+				<p>This plugin uses the HTTP API of nello.io for the following features:</p>
+				<ul>
+					<li>Nello Authentication: logs the user in with the specified client ID &amp; secret</li>
+					<li>Nello Public API<ul>
+							<li><a href="https://nellopublicapi.docs.apiary.io/#reference/0/locations-collection/list-locations">list locations</a></li>
+							<li><a href="https://nellopublicapi.docs.apiary.io/#reference/0/locations-collection/open-door">open door</a></li>
+							<li><a href="https://nellopublicapi.docs.apiary.io/#reference/0/locations-collection/add-/-update-webhook">add/update webhook</a></li>
+						</ul>
+					</li>
+				</ul>
+				<p>Others</p>
+				<ul>
+					<li>Video Doorbell - This plugin uses <a href="https://github.com/KhaosT/homebridge-camera-ffmpeg">https://github.com/KhaosT/homebridge-camera-ffmpeg</a> and <a href="https://github.com/moritzmhmk/homebridge-camera-rpi">https://github.com/moritzmhmk/homebridge-camera-rpi</a> for implementation</li>
+				</ul>
+				<a href="#security" id="security" style="color: inherit; text-decoration: none;">
+					<h2>Security</h2>
+				</a>
+				<ul>
+					<li>All calls to the nello.io API are being sent via HTTPS.</li>
+					<li>The client secret used by this plugin has to be specified in the <code>config.json</code> on the PC/Mac/Raspberry running homebridge. Therefore, please make sure that nobody can access this device within your local network without permission.</li>
+					<li>In the Apple Home app, a lock can be easily unlocked with a single touch onto the icon. Please be careful not to open the door unintentionally.</li>
+					<li>The webhook uses a relay service which is hosted by @AlexanderBabel. You can find the source code of the service here: <a href="https://github.com/AlexanderBabel/nello-backend">https://github.com/AlexanderBabel/nello-backend</a></li>
+				</ul>
+				<a href="#development" id="development" style="color: inherit; text-decoration: none;">
+					<h2>Development</h2>
+				</a>
+				<a href="#linting" id="linting" style="color: inherit; text-decoration: none;">
+					<h3>Linting</h3>
+				</a>
+				<p><code>npm run lint</code> / <code>npm run format</code></p>
+				<a href="#publishing" id="publishing" style="color: inherit; text-decoration: none;">
+					<h3>Publishing</h3>
+				</a>
+				<ul>
+					<li>To bump the version automatically, go to the <a href="https://github.com/lukasroegner/homebridge-nello/actions?query=workflow%3Abump-version"><code>bump-version</code></a> workflow and trigger a new event by clicking <code>Run workflow</code>. You can enter <code>major</code> <code>minor</code> <code>patch</code> or an actual version like <code>v0.0.1</code>. This bumps the <code>package.json</code> version, creates a tag, and pushes it back to master. It also drafts a release for you. (Source: <a href="./.github/workflows/bump-version.yml">bump-version.yml</a>).</li>
+					<li>Now go to <a href="https://github.com/lukasroegner/homebridge-nello/releases">Releases</a> where you will see a release already drafted for you. When you publish it, the <code>npm-publish</code> workflow will automatically run and publish to NPM. (Source: <a href="./.github/workflows/npm-publish.yml">npm-publish.yml</a>).</li>
+				</ul>
+				<p>(Requires GitHub Action <code>NPM_TOKEN</code> secret to be set in the repo with publish rights).</p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="globals.html"><em>Globals</em></a>
+					</li>
+					<li class=" tsd-kind-module">
+						<a href="modules/_config_.html">&quot;config&quot;</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer>
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

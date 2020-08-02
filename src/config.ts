@@ -1,4 +1,5 @@
 import type { PluginIdentifier, PlatformName } from 'homebridge';
+import type { ResolvedConfig } from './lib/resolveConfig';
 
 export const PLUGIN_NAME: PluginIdentifier = 'homebridge-nello';
 export const PLATFORM_NAME: PlatformName = 'NelloPlatform';
@@ -8,22 +9,49 @@ export const AUTH_URI = 'https://auth.nello.io';
 
 export const SOCKET_BACKEND = 'https://nello-socket.alexdev.de';
 
-export type NelloAuthConfig = {
+export type Config = {
+  auth: NelloAuthConfig;
+  common: NelloPlatformConfig;
   /**
-   * the method of authentication, either "password" or "client". This is set to "password"
-   * for backwards compatibility with previous versions of this plugin, but it is recommended
-   * to use the "client" method to avoid having to keep a username and password in plaintext
-   * in the configuration
-   */
-  authType?: 'password' | 'client'
-  /** Client ID (read "Retrieving a client ID and client secret from Nello") */
-  clientId?: string
-  /** (required for "client" auth) */
-  clientSecret?: string
-  /** (required for "password" auth): the email address of your nello.io account. */
-  username?: string
-  /** (required for "password" auth): the password of your account. */
-  password?: string
+   * If you have a doorbell with srtp support, or a Raspberry Pi camera module,
+   * you can use this configuration.
+
+   * You need to install ffmpeg if you want to see a picture in the Home app.
+   * Just take a look at last paragraph of the Installation part
+   * */
+  video: NelloVideoConfig;
+};
+
+export const DEFAULT_CONFIG: ResolvedConfig = {
+  common: {
+    lockTimeout: 5000,
+    motionTimeout: 5000,
+    locationUpdateInterval: 3600000,
+    exposeReachability: false,
+    videoDoorbell: false,
+    raspberryPiCamera: false,
+    motionSensor: false,
+    alwaysOpenSwitch: false,
+    publicWebhookUrl: '',
+    webhookServerPort: 5000,
+  },
+  video: {
+    stream: '-re -i',
+    snapshotImage: 'http://via.placeholder.com/1280x720',
+    maxWidth: 1280,
+    maxHeight: 720,
+    maxFPS: 30,
+    vcodec: 'h264_omx',
+    rotate: 0,
+    debug: false,
+    verticalFlip: false,
+    horizontalFlip: false,
+  },
+};
+
+export type NelloAuthConfig = {
+  clientId: string
+  clientSecret: string
 };
 
 export type NelloPlatformConfig = {
@@ -67,7 +95,7 @@ export type NelloPlatformConfig = {
    * */
   motionSensor?: boolean
   /**
-   * Exposed a switch to HomeKit. If the switch is enabled through HomeKit,
+   * Expose a switch to HomeKit. If the switch is enabled through HomeKit,
    * every time someone rings and Nello will not open the door automatically,
    * this plugin will do it. (Can be used for HomeKit automations.)
    * */
@@ -79,41 +107,41 @@ export type NelloPlatformConfig = {
    * to register with Nello.io. */
   publicWebhookUrl?: string
   /**
-   * Port to run the Express Webhook server on. Only required if you setup the
+   * Port to run the Express Webhook server on. Only relevant if you setup the
    * publicWebhookUrl above.
    * */
   webhookServerPort?: number
-
-  video?: {
-    /**
-     * Enter a stream url of e.g. your RaspberryPi camera or leave it blank
-     * if you don't have one */
-    stream?: string
-    /** You can set an image which will be shown as camera output */
-    snapshotImage?: string
-    /** Maximum width of the stream */
-    maxWidth?: number
-    /** Maximum height of the stream */
-    maxHeight?: number
-    /** Maximum frame per seconds of the stream */
-    maxFPS?: number
-    /** Set a video codec for ffmpeg */
-    vcodec?: string
-
-    // The following settings are only available if raspberryPiConfig is set to true
-
-    /** (Pi Only) If set to true you will see all messages from ffmpeg */
-    rotate: number
-    /** (Pi Only) Rotate the video stream (in degrees) */
-    debug?: boolean
-    /** (Pi Only) Flip the stream vertically */
-    verticalFlip?: boolean
-    /** (Pi Only) Flip the stream horitzontally */
-    horizontalFlip?: boolean
-  }
 
   /** It's recommended to create another account in the nello app for this plugin.
    * In order to prevent duplicated notification you should enter the user name of
    * this HomeKit account. Default value is undefined. */
   homekitUser?: string
+};
+
+export type NelloVideoConfig = {
+  /**
+   * Enter a stream url of e.g. your RaspberryPi camera or leave it blank
+   * if you don't have one */
+  stream?: string
+  /** You can set an image which will be shown as camera output */
+  snapshotImage?: string
+  /** Maximum width of the stream */
+  maxWidth?: number
+  /** Maximum height of the stream */
+  maxHeight?: number
+  /** Maximum frame per seconds of the stream */
+  maxFPS?: number
+  /** Set a video codec for ffmpeg */
+  vcodec?: string
+
+  // The following settings are only available if raspberryPiConfig is set to true
+
+  /** (Pi Only) If set to true you will see all messages from ffmpeg */
+  rotate?: number
+  /** (Pi Only) Rotate the video stream (in degrees) */
+  debug?: boolean
+  /** (Pi Only) Flip the stream vertically */
+  verticalFlip?: boolean
+  /** (Pi Only) Flip the stream horitzontally */
+  horizontalFlip?: boolean
 };

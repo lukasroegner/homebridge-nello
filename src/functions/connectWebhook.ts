@@ -15,14 +15,14 @@ const registerWebhook = (platform: NelloPlatform) => {
     res.status(200).send('OK');
   });
 
-  const port = platform.config.webhookServerPort;
+  const port = platform.config.common.webhookServerPort;
 
   app.listen(port, () => {
     platform.log(`Webhook server listening on port ${port}`);
     platform.getLocations().forEach((location) => {
       void platform.updateWebhook(
         location.location_id,
-        platform.config.publicWebhookUrl,
+        platform.config.common.publicWebhookUrl,
       );
     });
   });
@@ -57,7 +57,7 @@ const connectToWebhookRelay = (platform: NelloPlatform) => {
  * Opens connection to the webhook backend.
  */
 export const connectWebhook = (platform: NelloPlatform): void => {
-  if (platform.config.publicWebhookUrl) {
+  if (platform.config.common.publicWebhookUrl) {
     registerWebhook(platform);
   } else {
     platform.log('Connecting to webhook relay service');

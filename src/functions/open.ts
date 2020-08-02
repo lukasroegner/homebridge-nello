@@ -6,6 +6,7 @@ import type { NelloPlatform, Location } from '../NelloPlatform';
  */
 export const open = async (platform: NelloPlatform, location: Location): Promise<void> => {
   try {
+    // https://nellopublicapi.docs.apiary.io/#reference/0/locations-collection/open-door
     await platform.client.request(
       'PUT',
       `/locations/${location.location_id}/open/`,
