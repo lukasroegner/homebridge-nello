@@ -46,6 +46,7 @@ export const DEFAULT_CONFIG: ResolvedConfig = {
     debug: false,
     verticalFlip: false,
     horizontalFlip: false,
+    ffmpegBinary: 'ffmpeg',
   },
 };
 
@@ -133,6 +134,8 @@ export type NelloVideoConfig = {
   maxFPS?: number
   /** Set a video codec for ffmpeg */
   vcodec?: string
+  /** Custom path to ffmpeg binary */
+  ffmpegBinary?: string
 
   // The following settings are only available if raspberryPiConfig is set to true
 

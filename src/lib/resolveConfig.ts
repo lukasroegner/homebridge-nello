@@ -64,6 +64,7 @@ export const resolveConfig = (
       debug: video?.debug ?? defaultVideo.debug,
       verticalFlip: video?.verticalFlip ?? defaultVideo.verticalFlip,
       horizontalFlip: video?.horizontalFlip ?? defaultVideo.horizontalFlip,
+      ffmpegBinary: video?.ffmpegBinary ?? defaultVideo.ffmpegBinary,
     },
   };
 };

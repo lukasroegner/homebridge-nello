@@ -58,7 +58,7 @@ export const addCamera = (platform: NelloPlatform, accessory: AccessoryWithConte
           maxFPS: platform.config.video.maxFPS,
           vcodec: platform.config.video.vcodec,
         },
-      }, platform.log, 'ffmpeg')
+      }, platform.log, platform.config.video.ffmpegBinary)
   );
 
   videodoorbellAccessory.configureCameraSource(videoDoorbellSource);
