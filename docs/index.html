@@ -65,46 +65,81 @@
 				<a href="#homebridge-nello" id="homebridge-nello" style="color: inherit; text-decoration: none;">
 					<h1>homebridge-nello</h1>
 				</a>
-				<p>This project is a homebridge plugin for the smart intercom nello.io. All your nello.io locks are dynamically added to HomeKit as lock accessories. If you want to learn more about the smart intercom nello one, please visit <a href="https://www.nello.io">https://www.nello.io</a>. There is an excellent blog post about the integration of nello into homebridge that can be found at <a href="https://www.nello.io/blog/how-to-connect-your-nello-one-to-homebridge/">https://www.nello.io/blog/how-to-connect-your-nello-one-to-homebridge/</a>.</p>
+				<p>This project is a homebridge plugin for the smart intercom nello.io. All your nello.io locks are dynamically added to HomeKit as lock accessories. If you want to learn more about the smart intercom nello one, please visit <a href="https://www.nello.io">https://www.nello.io</a>.</p>
+				<p><a href="https://lukasroegner.github.io/homebridge-nello">Configuration / Docs</a></p>
+				<a href="#features" id="features" style="color: inherit; text-decoration: none;">
+					<h2>Features</h2>
+				</a>
+				<ul>
+					<li>Door Lock</li>
+					<li>Motion Sensor</li>
+					<li>Video Doorbell</li>
+					<li>Configurable Switch to automatically open the door on ring</li>
+				</ul>
+				<a href="#disclaimer" id="disclaimer" style="color: inherit; text-decoration: none;">
+					<h2>Disclaimer</h2>
+				</a>
+				<p>Nello went bankrupt and was bought by Sclak. The public API was down for a long time after the announcement in October 2019 (though the app worked intermittently), but is back online as of August 2020. This plugin may stop working at any time due to this uncertainty.</p>
+				<a href="#migration-guide-for-06x" id="migration-guide-for-06x" style="color: inherit; text-decoration: none;">
+					<h2>Migration Guide for 0.6.x</h2>
+				</a>
+				<ul>
+					<li><p><code>&quot;authType&quot;: &quot;password&quot;</code> is no longer supported. Please copy your clientSecret as shown in the installation steps below.</p>
+					</li>
+					<li><p>The settings have been further grouped under <code>auth</code> and <code>common</code> and it now looks like this:</p>
+						<pre><code class="language-json">{
+  <span class="hljs-attr">&quot;platform&quot;</span> : <span class="hljs-string">&quot;NelloPlatform&quot;</span>,
+  <span class="hljs-attr">&quot;name&quot;</span> : <span class="hljs-string">&quot;nello.io&quot;</span>,
+  <span class="hljs-attr">&quot;auth&quot;</span>: {
+    <span class="hljs-comment">// auth settings move here, and username/password is not supported anymore</span>
+    <span class="hljs-attr">&quot;clientSecret&quot;</span>: <span class="hljs-string">&quot;&lt;paste-client-secret-here&gt;&quot;</span>,
+    <span class="hljs-attr">&quot;clientId&quot;</span>: <span class="hljs-string">&quot;&lt;paste-client-id-here&gt;&quot;</span>
+  },
+  <span class="hljs-attr">&quot;common&quot;</span>: {
+    <span class="hljs-comment">// all other settings go here</span>
+  },
+  <span class="hljs-attr">&quot;video&quot;</span>: {
+    <span class="hljs-comment">// video settings stay here</span>
+  }
+}</code></pre>
+					</li>
+				</ul>
 				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
 					<h2>Installation</h2>
 				</a>
 				<p>It&#39;s recommended to create a new dedicated nello.io account in order to prevent duplicated notifications if you open the door over the Home app. It&#39;s also possible to use your own account with this plugin.</p>
-				<p>Install the plugin via npm:</p>
-				<pre><code class="language-bash">npm install homebridge-nello -g</code></pre>
+				<ol>
+					<li><p>Install the plugin via npm:</p>
+						<pre><code class="language-bash"> npm install homebridge-nello -g</code></pre>
+					</li>
+					<li><p>Generate clientId &amp; clientSecret</p>
+						<p> <strong>IMPORTANT:</strong> Please visit <a href="https://auth.nello.io/admin/">https://auth.nello.io/admin/</a> and sign in with your username and password that you also use in the nello.io app. If you are using a dedicated user account for this plugin, make sure that you use the credentials of this account to generate a client ID.</p>
+						<p> Fill in all required fields in the &quot;Create API client&quot; form (mark all &quot;Allowed response type&quot;s and &quot;Allowed grant type&quot;s)</p>
+					</li>
+					<li><p>Add the basic configuration</p>
+						<pre><code class="language-json"> {
+   <span class="hljs-attr">&quot;platforms&quot;</span>: [
+     {
+       <span class="hljs-attr">&quot;platform&quot;</span> : <span class="hljs-string">&quot;NelloPlatform&quot;</span>,
+       <span class="hljs-attr">&quot;name&quot;</span> : <span class="hljs-string">&quot;nello.io&quot;</span>,
+       <span class="hljs-attr">&quot;auth&quot;</span>: {
+         <span class="hljs-attr">&quot;clientSecret&quot;</span>: <span class="hljs-string">&quot;&lt;paste-client-secret-here&gt;&quot;</span>,
+         <span class="hljs-attr">&quot;clientId&quot;</span>: <span class="hljs-string">&quot;&lt;paste-client-id-here&gt;&quot;</span>
+       }
+     }
+   ]
+ }</code></pre>
+					</li>
+					<li><p>This exposes ONLY the door lock. Look at the <a href="https://lukasroegner.github.io/homebridge-nello/modules/_config_.html">docs</a> for more options to configure motion sensors, the video doorbell, a custom webhook server, automation helper switches, and configure reachability.</p>
+					</li>
+				</ol>
 				<a href="#optional-installation-of-ffmpeg" id="optional-installation-of-ffmpeg" style="color: inherit; text-decoration: none;">
 					<h3>Optional: Installation of FFMPEG</h3>
 				</a>
-				<p><strong>Only if you want to use a camera accessory. More information in the Configuration section.</strong></p>
 				<p>You can install the default package or compile it yourself if you have a special case to fit.</p>
 				<pre><code class="language-bash">sudo apt-get install ffmpeg</code></pre>
 				<p>General information about ffmpeg can be found here <a href="https://github.com/KhaosT/homebridge-camera-ffmpeg/wiki">https://github.com/KhaosT/homebridge-camera-ffmpeg/wiki</a>)</p>
 				<p>Due to HomeKit limitations it&#39;s required to add the camera separately. Just tap on the plus button in the top right corner, choose &quot;Add Accessory&quot; and click on &quot;Don&#39;t Have a Code or Can&#39;t Scan?&quot;. In the next view you should see the camera accessory. Tap it in order to add it to the Home app. The PIN is the same as of your HomeBridge instance.</p>
-				<a href="#retrieving-a-client-id-and-client-secret-from-nello" id="retrieving-a-client-id-and-client-secret-from-nello" style="color: inherit; text-decoration: none;">
-					<h2>Retrieving a client ID and client secret from Nello</h2>
-				</a>
-				<p><strong>IMPORTANT:</strong> Please visit <a href="https://auth.nello.io/admin/">https://auth.nello.io/admin/</a> and sign in with your username and password that you also use in the nello.io app.</p>
-				<p>Fill in all required fields in the &quot;Create API client&quot; form (mark all &quot;Allowed response type&quot;s and &quot;Allowed grant type&quot;s). Copy the client ID and and client Secret paste it into the configuration as seen below.</p>
-				<p>If you are using a dedicated user account for this plugin, make sure that you use the credentials of this account to generate a client ID.</p>
-				<a href="#configuration" id="configuration" style="color: inherit; text-decoration: none;">
-					<h2>Configuration</h2>
-				</a>
-				<p>Please look at all the options and default values in the <a href="docs/modules/_config_.html">docs</a>.</p>
-				<p>This is the basic configuration required to only expose the door lock:</p>
-				<pre><code class="language-json">  {
-    <span class="hljs-attr">&quot;platforms&quot;</span>: [
-      {
-        <span class="hljs-attr">&quot;platform&quot;</span> : <span class="hljs-string">&quot;NelloPlatform&quot;</span>,
-        <span class="hljs-attr">&quot;name&quot;</span> : <span class="hljs-string">&quot;nello.io&quot;</span>,
-        <span class="hljs-attr">&quot;auth&quot;</span>: {
-          <span class="hljs-attr">&quot;clientSecret&quot;</span>: <span class="hljs-string">&quot;&lt;paste-client-secret-here&gt;&quot;</span>,
-          <span class="hljs-attr">&quot;clientId&quot;</span>: <span class="hljs-string">&quot;&lt;paste-client-id-here&gt;&quot;</span>
-        }
-      }
-    ]
-  }</code></pre>
-				<p>Look at the docs for more options to configure motion sensors, the video doorbell,
-				a custom webhook server, automation helper switches, and configure reachability.</p>
 				<p><strong>You need to install ffmpeg if you want to see a picture in the Home app. Just take a look at last paragraph of the Installation part.</strong></p>
 				<a href="#implementation-details" id="implementation-details" style="color: inherit; text-decoration: none;">
 					<h2>Implementation Details</h2>
@@ -112,12 +147,7 @@
 				<p>This plugin uses the HTTP API of nello.io for the following features:</p>
 				<ul>
 					<li>Nello Authentication: logs the user in with the specified client ID &amp; secret</li>
-					<li>Nello Public API<ul>
-							<li><a href="https://nellopublicapi.docs.apiary.io/#reference/0/locations-collection/list-locations">list locations</a></li>
-							<li><a href="https://nellopublicapi.docs.apiary.io/#reference/0/locations-collection/open-door">open door</a></li>
-							<li><a href="https://nellopublicapi.docs.apiary.io/#reference/0/locations-collection/add-/-update-webhook">add/update webhook</a></li>
-						</ul>
-					</li>
+					<li>Nello Public API: see all methods in <a href="./src/lib/APIClient.ts">APIClient</a></li>
 				</ul>
 				<p>Others</p>
 				<ul>
@@ -127,10 +157,10 @@
 					<h2>Security</h2>
 				</a>
 				<ul>
-					<li>All calls to the nello.io API are being sent via HTTPS.</li>
+					<li>All requests to the nello.io are made over HTTPS.</li>
 					<li>The client secret used by this plugin has to be specified in the <code>config.json</code> on the PC/Mac/Raspberry running homebridge. Please make sure that nobody can access this device within your local network without permission.</li>
 					<li>In the Apple Home app, a lock can be easily unlocked with a single tap on the icon. Please be careful not to open the door unintentionally.</li>
-					<li>The webhook uses a relay service which is hosted by @AlexanderBabel. You can find the source code of the service here: <a href="https://github.com/AlexanderBabel/nello-backend">https://github.com/AlexanderBabel/nello-backend</a></li>
+					<li>The webhook uses a relay service which is hosted by @AlexanderBabel. You can find the source code of the service here: <a href="https://github.com/AlexanderBabel/nello-backend">https://github.com/AlexanderBabel/nello-backend</a>. You can override this and configure your own URL if you expose the right ports, look at the docs for more info.</li>
 				</ul>
 				<a href="#development" id="development" style="color: inherit; text-decoration: none;">
 					<h2>Development</h2>
