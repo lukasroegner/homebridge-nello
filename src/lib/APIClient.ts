@@ -1,14 +1,13 @@
 import type { Logging } from 'homebridge';
 import request from 'request';
 
-import { AUTH_URI } from '../config';
+import { PUBLIC_API_URI, AUTH_URI } from '../config';
 
 import { Location } from './Location';
 import { WebhookAction } from './WebhookData';
 
 export class APIClient {
   constructor(
-    private baseUrl: string,
     private log: Logging,
     private grantFormParameters: Record<string, string>,
     private updateReachability: (reachable: boolean) => void,
@@ -56,7 +55,7 @@ export class APIClient {
     body: TBody | undefined = undefined,
     retried = false,
   ): Promise<TResponse> {
-    const url = `${retried ? '' : this.baseUrl}${path}`;
+    const url = `${PUBLIC_API_URI}${path}`;
     const logPart = `${method} ${url}`;
     this.log(`START Request: ${logPart}`);
 
@@ -74,7 +73,7 @@ export class APIClient {
     } catch (e) {
       if (!retried) {
         this.log(`RETRY Request: ${logPart}`);
-        return this.request(method, url, body, true);
+        return this.request(method, path, body, true);
       }
       throw e;
     }

@@ -67,7 +67,6 @@ export class NelloPlatform implements DynamicPlatformPlugin {
     }
 
     this.client = new APIClient(
-      'https://public-api.nello.io/v1',
       this.log,
       {
         grant_type: 'client_credentials',
