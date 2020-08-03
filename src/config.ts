@@ -34,7 +34,7 @@ export const DEFAULT_CONFIG: ResolvedConfig = {
     videoDoorbell: false,
     raspberryPiCamera: false,
     motionSensor: false,
-    alwaysOpenSwitch: false,
+    dangerouslyEnableAlwaysOpenSwitch: false,
     publicWebhookUrl: '',
     webhookServerPort: 5000,
     dryRun: false,
@@ -103,8 +103,13 @@ export type NelloPlatformConfig = {
    * Expose a switch to HomeKit. If the switch is enabled through HomeKit,
    * every time someone rings and Nello will not open the door automatically,
    * this plugin will do it. (Can be used for HomeKit automations.)
+   *
+   * WARNING: Nello webhooks are not signed or authenticated!
+   *
+   * Look at the README.md or https://github.com/lukasroegner/homebridge-nello/issues/43
+   * for more info
    * */
-  alwaysOpenSwitch?: boolean
+  dangerouslyEnableAlwaysOpenSwitch?: boolean
 
   /** Specify this if you would not like to use the Webhook Relay service and instead
    * setup port forwarding and Dynamic DNS to make a local Express server publicly accessible.

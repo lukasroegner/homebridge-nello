@@ -30,6 +30,8 @@ export class NelloPlatform implements DynamicPlatformPlugin {
 
   private locations: Location[] = [];
 
+  private closeWebhook: VoidFunction | undefined;
+
   config!: ResolvedConfig;
 
   client!: APIClient;
@@ -81,24 +83,26 @@ export class NelloPlatform implements DynamicPlatformPlugin {
       this.log('Cached accessories loaded.');
       void this.startup();
     });
+
+    this.api.on('shutdown', () => {
+      this.closeWebhook?.();
+    });
   }
 
   private async startup() {
     // Initially updates the locations to get the locks
     await this.updateLocations();
+    await this.connectWebhook();
 
     // Starts the timer for updating locations (i.e. adding and removing locks of the user)
     if (this.config.common.locationUpdateInterval > 0) {
-      setInterval(() => {
-        void this.updateLocations();
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      setInterval(async () => {
+        await this.updateLocations();
+        // Also generate a new URL periodically
+        await this.connectWebhook();
       }, this.config.common.locationUpdateInterval);
     }
-
-    const webhookUrl = await connectWebhook(this);
-
-    await Promise.all(
-      this.getLocations().map((location) => this.updateWebhook(location, webhookUrl)),
-    );
   }
 
   private async updateLocations(): Promise<void> {
@@ -107,6 +111,18 @@ export class NelloPlatform implements DynamicPlatformPlugin {
     } catch (e) {
       this.log.warn('Getting locations from nello.io failed', e);
     }
+  }
+
+  private async connectWebhook() {
+    this.closeWebhook?.();
+
+    const { url, close } = await connectWebhook(this);
+
+    this.closeWebhook = close;
+
+    await Promise.all(
+      this.getLocations().map((location) => this.updateWebhook(location, url)),
+    );
   }
 
   private async updateWebhook(location: Location, webhookUri: string): Promise<void> {

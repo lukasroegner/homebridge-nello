@@ -49,7 +49,7 @@ export const configureAccessoryServices = (
   }
 
   // Add switch
-  if (platform.config.common.alwaysOpenSwitch) {
+  if (platform.config.common.dangerouslyEnableAlwaysOpenSwitch) {
     accessory.context.alwaysOpen = accessory.context.alwaysOpen || false;
     getAccessoryService(accessory, Service.Switch)
       .getCharacteristic(Characteristic.On)
@@ -80,6 +80,7 @@ export const configureAccessoryServices = (
 
   // Handles setting the target lock state
     .getCharacteristic(Characteristic.LockTargetState)
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     .on('set', async (value: CharacteristicValue, callback: CharacteristicSetCallback) => {
       callback(null);
 

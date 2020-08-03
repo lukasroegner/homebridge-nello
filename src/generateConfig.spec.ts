@@ -23,10 +23,12 @@ const config: Config = {
   },
   common: {
     dryRun: true,
-    alwaysOpenSwitch: true,
+    dangerouslyEnableAlwaysOpenSwitch: true,
     exposeReachability: true,
     motionSensor: true,
     videoDoorbell: true,
+    // 3 minutes
+    locationUpdateInterval: 3 * 60 * 1000,
     publicWebhookUrl: getEnv('WEBHOOK_URL'),
   },
   video: {

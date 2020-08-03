@@ -46,7 +46,8 @@ export const resolveConfig = (
       raspberryPiCamera: common.raspberryPiCamera ?? defaultCommon.raspberryPiCamera,
 
       motionSensor: common.motionSensor ?? defaultCommon.motionSensor,
-      alwaysOpenSwitch: common.alwaysOpenSwitch ?? defaultCommon.alwaysOpenSwitch,
+      dangerouslyEnableAlwaysOpenSwitch: common.dangerouslyEnableAlwaysOpenSwitch
+        ?? defaultCommon.dangerouslyEnableAlwaysOpenSwitch,
 
       publicWebhookUrl: common.publicWebhookUrl ?? defaultCommon.publicWebhookUrl,
       webhookServerPort: common.webhookServerPort ?? defaultCommon.webhookServerPort,

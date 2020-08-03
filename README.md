@@ -39,6 +39,8 @@ Nello went bankrupt and was bought by Sclak. The public API was down for a long 
   }
   ```
 
+* `enableAlwaysOpenSwitch` has been renamed to `dangerouslyEnableAlwaysOpenSwitch` (see [#43](https://github.com/lukasroegner/homebridge-nello/issues/43))
+
 ## Installation
 
 It's recommended to create a new dedicated nello.io account in order to prevent duplicated notifications if you open the door over the Home app. It's also possible to use your own account with this plugin.
@@ -105,6 +107,7 @@ Others
 * The client secret used by this plugin has to be specified in the `config.json` on the PC/Mac/Raspberry running homebridge. Please make sure that nobody can access this device within your local network without permission.
 * In the Apple Home app, a lock can be easily unlocked with a single tap on the icon. Please be careful not to open the door unintentionally.
 * The webhook uses a relay service which is hosted by @AlexanderBabel. You can find the source code of the service here: <https://github.com/AlexanderBabel/nello-backend>. You can override this and configure your own URL if you expose the right ports, look at the docs for more info.
+* Since the Nello webhooks are not signed or authenticated (see [#43](https://github.com/lukasroegner/homebridge-nello/issues/43)), an attacker who discovers your location UUID and/or webhook URL will be able to open your door with a simple payload if you enable the "always open switch". Use this feature at your own risk!
 
 ## Development
 

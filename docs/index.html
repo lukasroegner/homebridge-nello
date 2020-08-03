@@ -103,6 +103,8 @@
   }
 }</code></pre>
 					</li>
+					<li><p><code>enableAlwaysOpenSwitch</code> has been renamed to <code>dangerouslyEnableAlwaysOpenSwitch</code> (see <a href="https://github.com/lukasroegner/homebridge-nello/issues/43">#43</a>)</p>
+					</li>
 				</ul>
 				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
 					<h2>Installation</h2>
@@ -161,6 +163,7 @@
 					<li>The client secret used by this plugin has to be specified in the <code>config.json</code> on the PC/Mac/Raspberry running homebridge. Please make sure that nobody can access this device within your local network without permission.</li>
 					<li>In the Apple Home app, a lock can be easily unlocked with a single tap on the icon. Please be careful not to open the door unintentionally.</li>
 					<li>The webhook uses a relay service which is hosted by @AlexanderBabel. You can find the source code of the service here: <a href="https://github.com/AlexanderBabel/nello-backend">https://github.com/AlexanderBabel/nello-backend</a>. You can override this and configure your own URL if you expose the right ports, look at the docs for more info.</li>
+					<li>Since the Nello webhooks are not signed or authenticated (see <a href="https://github.com/lukasroegner/homebridge-nello/issues/43">#43</a>), an attacker who discovers your location UUID and/or webhook URL will be able to open your door with a simple payload if you enable the &quot;always open switch&quot;. Use this feature at your own risk!</li>
 				</ul>
 				<a href="#development" id="development" style="color: inherit; text-decoration: none;">
 					<h2>Development</h2>
