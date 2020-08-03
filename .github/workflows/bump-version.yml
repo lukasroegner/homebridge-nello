@@ -22,9 +22,12 @@ jobs:
         run: |
           VERSION=$(npm version ${{ github.event.inputs.version }})
           echo "::set-output name=VERSION::$VERSION"
-      - run: npm run docs
-      - run: git add docs/**/* && git commit --amend --no-edit
-      - run: git push --tags
+      - run: npm run docs && touch docs/.nojekyll
+      - run: "git add docs && git commit -m 'Update docs: ${{ steps.version.outputs.VERSION }}'"
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: git push --tags origin master
       - name: Create Release
         uses: actions/create-release@v1
         env:
@@ -33,5 +36,5 @@ jobs:
           tag_name: ${{ steps.version.outputs.VERSION }}
           release_name: ${{ steps.version.outputs.VERSION }}
           body: ${{ steps.version.outputs.VERSION }}
-          draft: true
+          draft: false
           prerelease: false

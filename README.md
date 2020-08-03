@@ -95,7 +95,7 @@ Due to HomeKit limitations it's required to add the camera separately. Just tap 
 This plugin uses the HTTP API of nello.io for the following features:
 
 * Nello Authentication: logs the user in with the specified client ID & secret
-* Nello Public API: see all methods in [APIClient](./src/lib/APIClient.ts)
+* Nello Public API: see all methods in [APIClient](https://github.com/lukasroegner/homebridge-nello/blob/master/src/lib/APIClient.ts)
 
 Others
 
@@ -117,7 +117,7 @@ Others
 
 ### Publishing
 
-* To bump the version automatically, go to the [`bump-version`](https://github.com/lukasroegner/homebridge-nello/actions?query=workflow%3Abump-version) workflow and trigger a new event by clicking `Run workflow`. You can enter `major` `minor` `patch` or an actual version like `v0.0.1`. This bumps the `package.json` version, creates a tag, and pushes it back to master. It also drafts a release for you. (Source: [bump-version.yml](./.github/workflows/bump-version.yml)).
-* Now go to [Releases](https://github.com/lukasroegner/homebridge-nello/releases) where you will see a release already drafted for you. When you publish it, the `npm-publish` workflow will automatically run and publish to NPM. (Source: [npm-publish.yml](./.github/workflows/npm-publish.yml)).
+* To bump the version and publish automatically, go to the [`bump-version`](https://github.com/lukasroegner/homebridge-nello/actions?query=workflow%3Abump-version) workflow and trigger a new event by clicking `Run workflow`. You can enter `major` `minor` `patch` or an actual version like `v0.0.1`. This bumps the `package.json` version, creates a tag, updates the docs, pushes it back to master, and publishes to npm. (Source: [bump-version.yml](./.github/workflows/bump-version.yml)).
+* Now go to [Releases](https://github.com/lukasroegner/homebridge-nello/releases) where you will see a release already published for you. You should update the release notes here.
 
 (Requires GitHub Action `NPM_TOKEN` secret to be set in the repo with publish rights).
