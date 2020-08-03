@@ -3,6 +3,7 @@
   "version": "0.5.0",
   "description": "Plugin for using the smart intercom system nello.io in homebridge.",
   "main": "dist/index.js",
+  "files": ["dist", "assets"],
   "license": "MIT",
   "keywords": [
     "homebridge-plugin",
@@ -13,7 +14,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "rm -fR dist/ tsconfig.tsbuildinfo && npm run build",
     "lint": "eslint ./src/ --ext .js,.ts",
     "format": "eslint ./src/ --ext .js,.ts --fix",
     "docs": "typedoc --inputFiles src/config.ts",
