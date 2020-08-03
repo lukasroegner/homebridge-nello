@@ -3,7 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { Config } from './config';
+import { Config } from '../src/config';
 
 const getEnv = (name: string): string => {
   const env = process.env[name];
