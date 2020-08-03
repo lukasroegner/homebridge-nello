@@ -10,6 +10,8 @@ export const PLATFORM_NAME: PlatformName = 'NelloPlatform';
 export const PUBLIC_API_URI = 'https://public-api.nello.io/v1';
 export const AUTH_URI = 'https://auth.nello.io';
 
+export const NELLO_HMAC_HEADER = 'x-nello-hook-hmac';
+
 export const SOCKET_BACKEND = 'https://nello-socket.alexdev.de';
 
 export type Config = {
@@ -104,17 +106,21 @@ export type NelloPlatformConfig = {
    * every time someone rings and Nello will not open the door automatically,
    * this plugin will do it. (Can be used for HomeKit automations.)
    *
-   * WARNING: Nello webhooks are not signed or authenticated!
+   * This plugin only checks for signatures when using a local webhook server
+   * (see publicWebhookUrl). The webhook forwarder does not (yet) support this,
+   * and it is a security risk to enable this switch without signing.
    *
    * Look at the README.md or https://github.com/lukasroegner/homebridge-nello/issues/43
    * for more info
    * */
   dangerouslyEnableAlwaysOpenSwitch?: boolean
 
-  /** Specify this if you would not like to use the Webhook Relay service and instead
+  /**
+   * Specify this if you would not like to use the Webhook Relay service and instead
    * setup port forwarding and Dynamic DNS to make a local Express server publicly accessible.
    * Must be configured to the full URL (e.g. http://example.com:3000/ or https://example.com/)
-   * to register with Nello.io. */
+   * to register with Nello.io.
+   * */
   publicWebhookUrl?: string
   /**
    * Port to run the Express Webhook server on. Only relevant if you setup the
@@ -122,12 +128,21 @@ export type NelloPlatformConfig = {
    * */
   webhookServerPort?: number
 
-  /** It's recommended to create another account in the nello app for this plugin.
+  /**
+   * It's recommended to create another account in the nello app for this plugin.
    * In order to prevent duplicated notification you should enter the user name of
-   * this HomeKit account. Default value is undefined. */
+   * this HomeKit account. Default value is undefined.
+   * */
   homekitUser?: string
 
-  /** Do not actually open the door, only log. Useful for testing. */
+  /**
+   * Do not actually open the door, only log. Useful for testing.
+   *
+   * WARNING: This also allows unauthenticated webhooks for testing.
+   *
+   * This is not a problen since this also disables door-opening,
+   * but please be aware.
+   * */
   dryRun?: boolean
 };
 

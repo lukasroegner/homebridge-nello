@@ -38,13 +38,14 @@ export class APIClient {
   }
 
   // https://nellopublicapi.docs.apiary.io/#reference/0/locations-collection/add-/-update-webhook
-  async updateWebhook(location: Location, uri: string): Promise<void> {
+  async updateWebhook(location: Location, uri: string, hmacKey?: string): Promise<void> {
     return this.request(
       'PUT',
       `/locations/${location.location_id}/webhook/`,
       {
         url: uri,
         actions: Object.values(WebhookAction),
+        ...(hmacKey ? { key: hmacKey } : undefined),
       },
     );
   }

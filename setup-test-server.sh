@@ -21,5 +21,5 @@ npm run build
 if [ -f "$DIR/config.json" ]; then
   echo "config exists, skipping"
 else
-  npx ts-node src/generateConfig.spec.ts
+  npx ts-node --project tsconfig.bin.json bin/generateConfig.ts
 fi

@@ -7,7 +7,7 @@
     "plugin:@typescript-eslint/recommended-requiring-type-checking"
   ],
   "parserOptions": {
-    "project": "./tsconfig.json"
+    "project": ["./tsconfig.json", "./tsconfig.bin.json"]
   },
   "rules": {
     "import/prefer-default-export": "off",
