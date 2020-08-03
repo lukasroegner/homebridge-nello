@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>homebridge-nello - v0.5.0</title>
-	<meta name="description" content="Documentation for homebridge-nello - v0.5.0">
+	<title>homebridge-nello - v1.0.1</title>
+	<meta name="description" content="Documentation for homebridge-nello - v1.0.1">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="assets/css/main.css">
 </head>
@@ -22,7 +22,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="index.html" class="title">homebridge-nello - v0.5.0</a>
+					<a href="index.html" class="title">homebridge-nello - v1.0.1</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -54,7 +54,7 @@
 					<a href="globals.html">Globals</a>
 				</li>
 			</ul>
-			<h1>homebridge-nello - v0.5.0</h1>
+			<h1>homebridge-nello - v1.0.1</h1>
 		</div>
 	</div>
 </header>
@@ -79,33 +79,11 @@
 				<a href="#disclaimer" id="disclaimer" style="color: inherit; text-decoration: none;">
 					<h2>Disclaimer</h2>
 				</a>
-				<p>Nello went bankrupt and was bought by Sclak. The public API was down for a long time after the announcement in October 2019 (though the app worked intermittently), but is back online as of August 2020. This plugin may stop working at any time due to this uncertainty.</p>
-				<a href="#migration-guide-for-06x" id="migration-guide-for-06x" style="color: inherit; text-decoration: none;">
-					<h2>Migration Guide for 0.6.x</h2>
+				<p>Nello went bankrupt and was bought by Sclak. The public API was down for a long time after the announcement in October 2019 (though the app worked intermittently), but is back online as of August 2020. This plugin may stop working at any time due to this uncertainty. (See: <a href="https://github.com/lukasroegner/homebridge-nello/issues/48">#48</a>)</p>
+				<a href="#migration-guide-from-05x-to-1xx" id="migration-guide-from-05x-to-1xx" style="color: inherit; text-decoration: none;">
+					<h2>Migration Guide from 0.5.x to 1.x.x</h2>
 				</a>
-				<ul>
-					<li><p><code>&quot;authType&quot;: &quot;password&quot;</code> is no longer supported. Please copy your clientSecret as shown in the installation steps below.</p>
-					</li>
-					<li><p>The settings have been further grouped under <code>auth</code> and <code>common</code> and it now looks like this:</p>
-						<pre><code class="language-json">{
-  <span class="hljs-attr">&quot;platform&quot;</span> : <span class="hljs-string">&quot;NelloPlatform&quot;</span>,
-  <span class="hljs-attr">&quot;name&quot;</span> : <span class="hljs-string">&quot;nello.io&quot;</span>,
-  <span class="hljs-attr">&quot;auth&quot;</span>: {
-    <span class="hljs-comment">// auth settings move here, and username/password is not supported anymore</span>
-    <span class="hljs-attr">&quot;clientSecret&quot;</span>: <span class="hljs-string">&quot;&lt;paste-client-secret-here&gt;&quot;</span>,
-    <span class="hljs-attr">&quot;clientId&quot;</span>: <span class="hljs-string">&quot;&lt;paste-client-id-here&gt;&quot;</span>
-  },
-  <span class="hljs-attr">&quot;common&quot;</span>: {
-    <span class="hljs-comment">// all other settings go here</span>
-  },
-  <span class="hljs-attr">&quot;video&quot;</span>: {
-    <span class="hljs-comment">// video settings stay here</span>
-  }
-}</code></pre>
-					</li>
-					<li><p><code>enableAlwaysOpenSwitch</code> has been renamed to <code>dangerouslyEnableAlwaysOpenSwitch</code> (see <a href="https://github.com/lukasroegner/homebridge-nello/issues/43">#43</a>)</p>
-					</li>
-				</ul>
+				<p>Look here: <a href="https://github.com/lukasroegner/homebridge-nello/releases/tag/v1.0.0">Release v1.0.0</a></p>
 				<a href="#installation" id="installation" style="color: inherit; text-decoration: none;">
 					<h2>Installation</h2>
 				</a>
@@ -148,8 +126,8 @@
 				</a>
 				<p>This plugin uses the HTTP API of nello.io for the following features:</p>
 				<ul>
-					<li>Nello Authentication: logs the user in with the specified client ID &amp; secret</li>
-					<li>Nello Public API: see all methods in <a href="./src/lib/APIClient.ts">APIClient</a></li>
+					<li>Nello Authentication: Retrieves a token using the specified client ID &amp; secret</li>
+					<li>Nello Public API: see all methods in <a href="https://github.com/lukasroegner/homebridge-nello/blob/master/src/lib/APIClient.ts">APIClient</a></li>
 				</ul>
 				<p>Others</p>
 				<ul>
@@ -163,7 +141,7 @@
 					<li>The client secret used by this plugin has to be specified in the <code>config.json</code> on the PC/Mac/Raspberry running homebridge. Please make sure that nobody can access this device within your local network without permission.</li>
 					<li>In the Apple Home app, a lock can be easily unlocked with a single tap on the icon. Please be careful not to open the door unintentionally.</li>
 					<li>The webhook uses a relay service which is hosted by @AlexanderBabel. You can find the source code of the service here: <a href="https://github.com/AlexanderBabel/nello-backend">https://github.com/AlexanderBabel/nello-backend</a>. You can override this and configure your own URL if you expose the right ports, look at the docs for more info.</li>
-					<li>Since the Nello webhooks are not signed or authenticated (see <a href="https://github.com/lukasroegner/homebridge-nello/issues/43">#43</a>), an attacker who discovers your location UUID and/or webhook URL will be able to open your door with a simple payload if you enable the &quot;always open switch&quot;. Use this feature at your own risk!</li>
+					<li>Since the Nello webhooks are not signed or authenticated (see <a href="https://github.com/lukasroegner/homebridge-nello/issues/43">#43</a>), an attacker who discovers your webhook URL will be able to open your door with a simple payload if you enable the &quot;always open switch&quot;. This is mitigated by the use of constantly changing unique URLs, but use this feature at your own risk!</li>
 				</ul>
 				<a href="#development" id="development" style="color: inherit; text-decoration: none;">
 					<h2>Development</h2>
@@ -176,8 +154,8 @@
 					<h3>Publishing</h3>
 				</a>
 				<ul>
-					<li>To bump the version automatically, go to the <a href="https://github.com/lukasroegner/homebridge-nello/actions?query=workflow%3Abump-version"><code>bump-version</code></a> workflow and trigger a new event by clicking <code>Run workflow</code>. You can enter <code>major</code> <code>minor</code> <code>patch</code> or an actual version like <code>v0.0.1</code>. This bumps the <code>package.json</code> version, creates a tag, and pushes it back to master. It also drafts a release for you. (Source: <a href="./.github/workflows/bump-version.yml">bump-version.yml</a>).</li>
-					<li>Now go to <a href="https://github.com/lukasroegner/homebridge-nello/releases">Releases</a> where you will see a release already drafted for you. When you publish it, the <code>npm-publish</code> workflow will automatically run and publish to NPM. (Source: <a href="./.github/workflows/npm-publish.yml">npm-publish.yml</a>).</li>
+					<li>To bump the version and publish automatically, go to the <a href="https://github.com/lukasroegner/homebridge-nello/actions?query=workflow%3Abump-version"><code>bump-version</code></a> workflow and trigger a new event by clicking <code>Run workflow</code>. You can enter <code>major</code> <code>minor</code> <code>patch</code> or an actual version like <code>v0.0.1</code>. This bumps the <code>package.json</code> version, creates a tag, updates the docs, pushes it back to master, and publishes to npm. (Source: <a href="./.github/workflows/bump-version.yml">bump-version.yml</a>).</li>
+					<li>Now go to <a href="https://github.com/lukasroegner/homebridge-nello/releases">Releases</a> where you will see a release already published for you. You should update the release notes here.</li>
 				</ul>
 				<p>(Requires GitHub Action <code>NPM_TOKEN</code> secret to be set in the repo with publish rights).</p>
 			</div>
