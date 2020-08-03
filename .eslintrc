@@ -1,6 +1,34 @@
 {
-  "extends": "airbnb-base",
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "airbnb-typescript/base",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking"
+  ],
+  "parserOptions": {
+    "project": "./tsconfig.json"
+  },
   "rules": {
-    "no-param-reassign": "warn"
+    "import/prefer-default-export": "off",
+    "no-param-reassign": "warn",
+    "@typescript-eslint/no-misused-promises": "warn",
+    "no-void": ["error", { "allowAsStatement": true }],
+    "import/order": [
+      "error",
+      {
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "unknown",
+          "parent",
+          "sibling",
+          "index"
+        ],
+        "newlines-between": "always",
+        "alphabetize": { "order":"asc" }
+      }
+    ]
   }
 }

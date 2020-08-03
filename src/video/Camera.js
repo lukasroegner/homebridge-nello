@@ -1,10 +1,13 @@
+/* eslint-disable */
 //Source: https://github.com/moritzmhmk/homebridge-camera-rpi/blob/master/CameraSource.js
 
 var ip = require('ip')
 var spawn = require('child_process').spawn
 var crypto = require('crypto')
 
-module.exports = Camera
+module.exports = {
+    Camera: Camera
+}
 
 function Camera(hap, conf) {
     this.hap = hap
