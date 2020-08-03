@@ -39,6 +39,7 @@ export const resolveConfig = (
       locationUpdateInterval: common.locationUpdateInterval === 0
         ? 0
         : (common.locationUpdateInterval ?? defaultCommon.locationUpdateInterval),
+      webhookUpdateInterval: common.webhookUpdateInterval ?? defaultCommon.webhookUpdateInterval,
 
       exposeReachability: common.exposeReachability ?? defaultCommon.exposeReachability,
 

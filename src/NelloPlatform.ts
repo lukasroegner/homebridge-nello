@@ -4,7 +4,7 @@ import type {
 
 import { Config, PLUGIN_NAME, PLATFORM_NAME } from './config';
 import { configureAccessoryServices } from './functions/configureAccessoryServices';
-import { connectWebhook } from './functions/connectWebhook';
+import { connectWebhook, WebhookHandle } from './functions/connectWebhook';
 import { createAccessory } from './functions/createAccessory';
 import { createOrUpdateCamera } from './functions/createOrUpdateCamera';
 import { updateLocations } from './functions/updateLocations';
@@ -81,7 +81,7 @@ export class NelloPlatform implements DynamicPlatformPlugin {
     // Subscribes to the event that is raised when homebrige finished loading cached accessories
     this.api.on('didFinishLaunching', () => {
       this.log('Cached accessories loaded.');
-      void this.startup();
+      void this.setup();
     });
 
     this.api.on('shutdown', () => {
@@ -89,19 +89,28 @@ export class NelloPlatform implements DynamicPlatformPlugin {
     });
   }
 
-  private async startup() {
+  private async setup(nextDelayMinutes = 1) {
     // Initially updates the locations to get the locks
-    await this.updateLocations();
-    await this.connectWebhook();
+    try {
+      await this.updateLocations();
+      this.connectWebhook();
+    } catch (e) {
+      this.log.error(`Setup failed, retrying in ${nextDelayMinutes} minute(s)`);
+      setTimeout(() => {
+        void this.setup(nextDelayMinutes + 1);
+      }, nextDelayMinutes * 60 * 1000);
+      return;
+    }
 
     // Starts the timer for updating locations (i.e. adding and removing locks of the user)
     if (this.config.common.locationUpdateInterval > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      setInterval(async () => {
-        await this.updateLocations();
-        // Also generate a new URL periodically
-        await this.connectWebhook();
+      setInterval(() => {
+        void this.updateLocations().catch(() => {});
       }, this.config.common.locationUpdateInterval);
+
+      setInterval(() => {
+        this.connectWebhook();
+      }, this.config.common.webhookUpdateInterval);
     }
   }
 
@@ -110,18 +119,20 @@ export class NelloPlatform implements DynamicPlatformPlugin {
       this.locations = await updateLocations(this);
     } catch (e) {
       this.log.warn('Getting locations from nello.io failed', e);
+      throw e;
     }
   }
 
-  private async connectWebhook() {
+  connectWebhook(): void {
     this.closeWebhook?.();
+    connectWebhook(this);
+  }
 
-    const { url, key, close } = await connectWebhook(this);
-
-    this.closeWebhook = close;
+  async updateWebhooks(handle: WebhookHandle): Promise<void> {
+    this.closeWebhook = handle.close;
 
     await Promise.all(
-      this.getLocations().map((location) => this.updateWebhook(location, url, key)),
+      this.getLocations().map((location) => this.updateWebhook(location, handle.url, handle.key)),
     );
   }
 

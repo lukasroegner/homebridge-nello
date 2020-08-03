@@ -31,7 +31,10 @@ export const DEFAULT_CONFIG: ResolvedConfig = {
   common: {
     lockTimeout: 5000,
     motionTimeout: 5000,
-    locationUpdateInterval: 3600000,
+    // 1 hour
+    locationUpdateInterval: 1 * 60 * 60 * 1000,
+    // 15 minutes
+    webhookUpdateInterval: 15 * 60 * 1000,
     exposeReachability: false,
     videoDoorbell: false,
     raspberryPiCamera: false,
@@ -62,29 +65,48 @@ export type NelloAuthConfig = {
 };
 
 export type NelloPlatformConfig = {
-  /** timeout in milliseconds, after which the lock will be displayed as locked after you
-   * unlock the door */
+  /**
+   * for how long should the lock be displayed as unlocked after you unlock the door
+   *
+   * (milliseconds)
+   * */
   lockTimeout?: number
   /**
-   * timeout in milliseconds, after which the motion sensor will be displayed as clear
-   * after some rang
+   * for how long should the motion sensor be triggered after someone rings
+   *
+   * (milliseconds)
    */
   motionTimeout?: number
 
   /**
-   * interval in milliseconds, in which the locks of a user are updated (i.e. new locks are
-   * added as accessories, locks that are no longer under control of the user are removed).
-   * This interval is also used to update the reachability of the locks (if the nello API is
-   * not reachable the locks are marked as "not rechable").
-   * Use 0 to disable continuous updates.
+   * Frequency to update locations from Nello (when devices are added or removed)
+   * also dictates how often the reachability is updated
+   * (when the Nello API is down)
+   *
+   * Use 0 to disable continuous updates (will only update at startup).
+   *
+   * (milliseconds)
    */
   locationUpdateInterval?: number
 
   /**
-   * If this value is set to true, the state of the locks is changed to "unknown" if the
-   * nello.io API is not reachable. It might be annoying to get HomeKit notifications that
-   * "the door is unlocked" (which is the content of the notification, even if the state of
-   * the door is "jammed" or "unknown") */
+   * how often to regenerate webhook URLs and set a new signing key
+   *
+   * this partially protects against replay attacks if an attacker gets
+   * access to a webhook payload (see docs for dangerouslyEnableAlwaysOpenSwitch)
+   *
+   * quicker is better, however, updates that are too frequent can cause errors on the Nello API
+   *
+   * (milliseconds)
+   */
+  webhookUpdateInterval?: number
+
+  /**
+   * Expose the lock state as "unknown" when nello.io API is unreachable.
+   *
+   * Unfortunately, this also triggers a fake "unlocked" notification, so turn this off
+   * if you do not want that.
+   * */
   exposeReachability?: boolean
 
   /**
@@ -103,15 +125,14 @@ export type NelloPlatformConfig = {
   motionSensor?: boolean
   /**
    * Expose a switch to HomeKit. If the switch is enabled through HomeKit,
-   * every time someone rings and Nello will not open the door automatically,
-   * this plugin will do it. (Can be used for HomeKit automations.)
+   * every time someone rings and Nello doesn't open the door automatically,
+   * this plugin will open it for you. (Can be used for HomeKit automations.)
    *
-   * This plugin only checks for signatures when using a local webhook server
-   * (see publicWebhookUrl). The webhook forwarder does not (yet) support this,
-   * and it is a security risk to enable this switch without signing.
+   * The URL and SHA256 HMAC key is regenerated periodically, but this is
+   * not immune to replay attacks (within the locationUpdateInterval)
+   * since Nello does not include a timestamp in their digest. Use at your own risk!
    *
-   * Look at the README.md or https://github.com/lukasroegner/homebridge-nello/issues/43
-   * for more info
+   * Context: https://github.com/lukasroegner/homebridge-nello/issues/43
    * */
   dangerouslyEnableAlwaysOpenSwitch?: boolean
 
