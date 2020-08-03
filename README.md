@@ -15,7 +15,7 @@ This project is a homebridge plugin for the smart intercom nello.io. All your ne
 
 Nello went bankrupt and was bought by Sclak. The public API was down for a long time after the announcement in October 2019 (though the app worked intermittently), but is back online as of August 2020. This plugin may stop working at any time due to this uncertainty.
 
-## Migration Guide for 0.6.x
+## Migration Guide from 0.5.x to 1.x.x
 
 * `"authType": "password"` is no longer supported. Please copy your clientSecret as shown in the installation steps below.
 
@@ -107,7 +107,7 @@ Others
 * The client secret used by this plugin has to be specified in the `config.json` on the PC/Mac/Raspberry running homebridge. Please make sure that nobody can access this device within your local network without permission.
 * In the Apple Home app, a lock can be easily unlocked with a single tap on the icon. Please be careful not to open the door unintentionally.
 * The webhook uses a relay service which is hosted by @AlexanderBabel. You can find the source code of the service here: <https://github.com/AlexanderBabel/nello-backend>. You can override this and configure your own URL if you expose the right ports, look at the docs for more info.
-* Since the Nello webhooks are not signed or authenticated (see [#43](https://github.com/lukasroegner/homebridge-nello/issues/43)), an attacker who discovers your location UUID and/or webhook URL will be able to open your door with a simple payload if you enable the "always open switch". Use this feature at your own risk!
+* Since the Nello webhooks are not signed or authenticated (see [#43](https://github.com/lukasroegner/homebridge-nello/issues/43)), an attacker who discovers your webhook URL will be able to open your door with a simple payload if you enable the "always open switch". This is mitigated by the use of constantly changing unique URls, but use this feature at your own risk!
 
 ## Development
 
