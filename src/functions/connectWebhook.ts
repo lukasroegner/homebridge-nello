@@ -1,26 +1,69 @@
+import crypto from 'crypto';
+
 import express from 'express';
 import io from 'socket.io-client';
-import { v4 as uuid } from 'uuid';
 
 import type { NelloPlatform } from '../NelloPlatform';
-import { SOCKET_BACKEND } from '../config';
+import { SOCKET_BACKEND, NELLO_HMAC_HEADER } from '../config';
 import { WebhookData } from '../lib/WebhookData';
 
 import { processWebhookData } from './processWebhookData';
 
-type WebhookHandle = { url: string; close: VoidFunction };
+type WebhookHandle = {
+  url: string;
+  close: VoidFunction;
+  /** Pre-Shared HMAC Key */
+  key?: string;
+};
 
 const registerWebhook = (
   platform: NelloPlatform,
 ): Promise<WebhookHandle> => new Promise((resolve) => {
+  platform.log('Registering webhook with unique URL and new HMAC key');
+
+  const key = crypto.randomBytes(32).toString('hex');
+  const uniqueId = crypto.randomBytes(32).toString('hex');
+
   const app = express();
 
-  const uniqueId = uuid();
+  const blockUnauthenticated = (body: string): boolean => {
+    const shouldBlock = !platform.config.common.dryRun;
 
-  app.use(express.json());
+    const message = shouldBlock ? 'DISCARDING' : 'ALLOWING DUE TO DRY-RUN';
 
-  app.put(`/${uniqueId}`, (req, res) => {
-    void processWebhookData(platform, req.body);
+    platform.log.warn(`Received webhook with invalid HMAC authentication, ${message}`, body);
+
+    return shouldBlock;
+  };
+
+  app.use(express.text({ type: '*/*' }));
+
+  app.put<Record<string, string>, unknown, string, unknown>(`/${uniqueId}`, (req, res) => {
+    const hmacDigestFromRequest = req.header(NELLO_HMAC_HEADER);
+    const jsonString = req.body;
+
+    if (!hmacDigestFromRequest && blockUnauthenticated(jsonString)) {
+      res.status(200).send('OK');
+      return;
+    }
+
+    const calculatedHmacDigest = crypto
+      .createHmac('sha256', key)
+      .update(jsonString)
+      .digest('hex');
+
+    if (hmacDigestFromRequest !== calculatedHmacDigest && blockUnauthenticated(jsonString)) {
+      res.status(200).send('OK');
+      return;
+    }
+
+    try {
+      void processWebhookData(platform, JSON.parse(jsonString));
+    } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+      platform.log.warn(`Error processing webhook: ${e}`);
+    }
+
     res.status(200).send('OK');
   });
 
@@ -30,6 +73,7 @@ const registerWebhook = (
     platform.log(`Webhook server listening on port ${port}`);
     resolve({
       url: `${platform.config.common.publicWebhookUrl}${uniqueId}`,
+      key,
       close: () => {
         platform.log('Closing webhook server');
         server.close();

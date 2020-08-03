@@ -116,19 +116,23 @@ export class NelloPlatform implements DynamicPlatformPlugin {
   private async connectWebhook() {
     this.closeWebhook?.();
 
-    const { url, close } = await connectWebhook(this);
+    const { url, key, close } = await connectWebhook(this);
 
     this.closeWebhook = close;
 
     await Promise.all(
-      this.getLocations().map((location) => this.updateWebhook(location, url)),
+      this.getLocations().map((location) => this.updateWebhook(location, url, key)),
     );
   }
 
-  private async updateWebhook(location: Location, webhookUri: string): Promise<void> {
+  private async updateWebhook(
+    location: Location,
+    webhookUri: string,
+    hmacKey?: string,
+  ): Promise<void> {
     this.log(`Updating webhook for door with ID ${location.location_id} to ${webhookUri}.`);
     try {
-      await this.client.updateWebhook(location, webhookUri);
+      await this.client.updateWebhook(location, webhookUri, hmacKey);
       this.log(`Updated webhook for door with ID ${location.location_id} to ${webhookUri}.`);
     } catch (e) {
       this.log('Updating webhook failed.');
