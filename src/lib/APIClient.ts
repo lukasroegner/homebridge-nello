@@ -54,30 +54,21 @@ export class APIClient {
     method: 'GET' | 'POST' | 'PUT',
     path: string,
     body: TBody | undefined = undefined,
-    retried = false,
   ): Promise<TResponse> {
     const url = `${PUBLIC_API_URI}${path}`;
     const logPart = `${method} ${url}`;
     this.log(`START Request: ${logPart}`);
 
-    try {
-      if (!this.token) {
-        this.log('Not signed in, requesting sign-in');
-        await this.signIn();
-      }
-
-      const response = await this.baseRequest<TResponse, TBody>(method, url, body);
-
-      this.log(`COMPLETE Request: ${logPart}`);
-
-      return response;
-    } catch (e) {
-      if (!retried) {
-        this.log(`RETRY Request: ${logPart}`);
-        return this.request(method, path, body, true);
-      }
-      throw e;
+    if (!this.token) {
+      this.log('Not signed in, requesting sign-in');
+      await this.signIn();
     }
+
+    const response = await this.baseRequest<TResponse, TBody>(method, url, body);
+
+    this.log(`COMPLETE Request: ${logPart}`);
+
+    return response;
   }
 
   private setToken(token: string): void {
@@ -137,8 +128,17 @@ export class APIClient {
         form,
         json: body ?? true,
       }, (error, response, responseBody) => {
-        if (error || response.statusCode !== 200) {
-          const message = `API error path=${path}, status_code=${response.statusCode}, response=${JSON.stringify(responseBody, null, 2)}`;
+        const message = `API error path=${path}`;
+
+        if (error) {
+          // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+          this.log.error(`${message}, error=${error}`);
+          reject(error);
+          return;
+        }
+
+        if (response.statusCode !== 200) {
+          const msgWithResponse = `${message}, status_code=${response.statusCode}, response=${JSON.stringify(responseBody, null, 2)}`;
 
           if (response.statusCode === 429) {
             // 1 minute
@@ -148,9 +148,9 @@ export class APIClient {
             this.resetToken();
           }
 
-          this.log.warn(message);
+          this.log.warn(msgWithResponse);
 
-          reject(new Error(message));
+          reject(new Error(msgWithResponse));
           return;
         }
 

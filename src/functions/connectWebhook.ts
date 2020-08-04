@@ -9,16 +9,44 @@ import { WebhookData } from '../lib/WebhookData';
 
 import { processWebhookData } from './processWebhookData';
 
-type WebhookHandle = {
+export type WebhookHandle = {
   url: string;
   close: VoidFunction;
   /** Pre-Shared HMAC Key */
   key?: string;
 };
 
+const validateAndProcessWebhook = (opts: {
+  key: string,
+  rawBody: string,
+  hmacDigestFromRequest?: string,
+}, platform: NelloPlatform): void => {
+  const calculatedDigest = crypto
+    .createHmac('sha256', opts.key)
+    .update(opts.rawBody)
+    .digest('hex');
+
+  if (opts.hmacDigestFromRequest !== calculatedDigest) {
+    platform.log.warn('Received webhook with invalid HMAC authentication', opts.rawBody);
+    if (platform.config.common.dryRun) {
+      platform.log.warn('ALLOWING WEBHOOK DATA DUE TO DRY-RUN');
+    } else {
+      platform.log.warn('DISCARDING WEBHOOK DATA');
+      return;
+    }
+  }
+
+  try {
+    void processWebhookData(platform, JSON.parse(opts.rawBody) as WebhookData);
+  } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+    platform.log.warn(`Error processing webhook: ${e}`);
+  }
+};
+
 const registerWebhook = (
   platform: NelloPlatform,
-): Promise<WebhookHandle> => new Promise((resolve) => {
+): void => {
   platform.log('Registering webhook with unique URL and new HMAC key');
 
   const key = crypto.randomBytes(32).toString('hex');
@@ -26,43 +54,14 @@ const registerWebhook = (
 
   const app = express();
 
-  const blockUnauthenticated = (body: string): boolean => {
-    const shouldBlock = !platform.config.common.dryRun;
-
-    const message = shouldBlock ? 'DISCARDING' : 'ALLOWING DUE TO DRY-RUN';
-
-    platform.log.warn(`Received webhook with invalid HMAC authentication, ${message}`, body);
-
-    return shouldBlock;
-  };
-
   app.use(express.text({ type: '*/*' }));
 
   app.put<Record<string, string>, unknown, string, unknown>(`/${uniqueId}`, (req, res) => {
-    const hmacDigestFromRequest = req.header(NELLO_HMAC_HEADER);
-    const jsonString = req.body;
-
-    if (!hmacDigestFromRequest && blockUnauthenticated(jsonString)) {
-      res.status(200).send('OK');
-      return;
-    }
-
-    const calculatedHmacDigest = crypto
-      .createHmac('sha256', key)
-      .update(jsonString)
-      .digest('hex');
-
-    if (hmacDigestFromRequest !== calculatedHmacDigest && blockUnauthenticated(jsonString)) {
-      res.status(200).send('OK');
-      return;
-    }
-
-    try {
-      void processWebhookData(platform, JSON.parse(jsonString));
-    } catch (e) {
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      platform.log.warn(`Error processing webhook: ${e}`);
-    }
+    validateAndProcessWebhook({
+      key,
+      hmacDigestFromRequest: req.header(NELLO_HMAC_HEADER),
+      rawBody: req.body,
+    }, platform);
 
     res.status(200).send('OK');
   });
@@ -71,7 +70,7 @@ const registerWebhook = (
 
   const server = app.listen(port, () => {
     platform.log(`Webhook server listening on port ${port}`);
-    resolve({
+    void platform.updateWebhooks({
       url: `${platform.config.common.publicWebhookUrl}${uniqueId}`,
       key,
       close: () => {
@@ -80,26 +79,35 @@ const registerWebhook = (
       },
     });
   });
-});
+};
 
 const connectToWebhookRelay = (
   platform: NelloPlatform,
-): Promise<WebhookHandle> => new Promise((resolve) => {
+): void => {
+  platform.log('Connecting to webhook relay service');
+
   const socket = io(SOCKET_BACKEND, { transports: ['websocket'] });
+
+  const key = crypto.randomBytes(32).toString('hex');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   socket.on('error', (err: any) => {
-    platform.log(err);
+    platform.log.error(err);
   });
 
   socket.on('connect', () => {
-    platform.log('Connected to webhook backend.');
+    platform.log('Connected to webhook backend, requesting webhook');
     socket.emit('getWebhook');
   });
 
+  socket.on('reconnecting', (attempt: number) => {
+    platform.log.warn(`Reconnecting to webhook backend, attempt ${attempt}...`);
+  });
+
   socket.on('webhook', (data: { url: string }) => {
-    resolve({
+    void platform.updateWebhooks({
       url: data.url,
+      key,
       close: () => {
         platform.log('Disconnecting from webhook backend');
         socket.close();
@@ -107,21 +115,23 @@ const connectToWebhookRelay = (
     });
   });
 
-  socket.on('call', (data: WebhookData) => {
-    if (data && data.action) {
-      void processWebhookData(platform, data);
-    }
+  // https://github.com/AlexanderBabel/nello-backend/blob/master/index.js
+  socket.on('call', (data: { rawBody: string, hmacSignature?: string }) => {
+    validateAndProcessWebhook({
+      key,
+      hmacDigestFromRequest: data.hmacSignature,
+      rawBody: data.rawBody,
+    }, platform);
   });
-});
+};
 
 /**
  * Opens connection to the webhook backend.
  */
-export const connectWebhook = (platform: NelloPlatform): Promise<WebhookHandle> => {
+export const connectWebhook = (platform: NelloPlatform): void => {
   if (platform.config.common.publicWebhookUrl) {
-    return registerWebhook(platform);
+    registerWebhook(platform);
+  } else {
+    connectToWebhookRelay(platform);
   }
-
-  platform.log('Connecting to webhook relay service');
-  return connectToWebhookRelay(platform);
 };
