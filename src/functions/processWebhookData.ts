@@ -13,10 +13,10 @@ export const processWebhookData = async (
       platform.log(`${data.data.name} opened the door with ID ${data.data.location_id}`);
       break;
     case WebhookAction.TimeWindow:
-      platform.log(`The door with ID ${data.data.location_id} has been opened in the time window ${data.data.name}.`);
+      platform.log(`The door with ID ${data.data.location_id} was opened in the time window ${data.data.name}.`);
       break;
     case WebhookAction.HomeZoneUnlock:
-      platform.log(`${data.data.name} opened the door with ID ${data.data.location_id} via geofence.`);
+      platform.log(`${data.data.name} opened the door with ID ${data.data.location_id} via Homezone Unlock.`);
       break;
     case WebhookAction.DidNotOpen:
       platform.log(`Someone rang the bell of the door with ID ${data.data.location_id}.`);

@@ -115,12 +115,7 @@ export class NelloPlatform implements DynamicPlatformPlugin {
   }
 
   private async updateLocations(): Promise<void> {
-    try {
-      this.locations = await updateLocations(this);
-    } catch (e) {
-      this.log.warn('Getting locations from nello.io failed', e);
-      throw e;
-    }
+    this.locations = await updateLocations(this);
   }
 
   connectWebhook(): void {
@@ -144,9 +139,8 @@ export class NelloPlatform implements DynamicPlatformPlugin {
     this.log(`Updating webhook for door with ID ${location.location_id} to ${webhookUri}.`);
     try {
       await this.client.updateWebhook(location, webhookUri, hmacKey);
-      this.log(`Updated webhook for door with ID ${location.location_id} to ${webhookUri}.`);
     } catch (e) {
-      this.log('Updating webhook failed.');
+      // already logged by client
     }
   }
 

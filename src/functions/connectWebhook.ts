@@ -96,7 +96,7 @@ const connectToWebhookRelay = (
   });
 
   socket.on('connect', () => {
-    platform.log('Connected to webhook backend');
+    platform.log('Connected to webhook backend, requesting webhook');
     socket.emit('getWebhook');
   });
 
