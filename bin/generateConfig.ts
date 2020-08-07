@@ -57,6 +57,12 @@ const homebridgeConfig = {
       name: 'nello.io',
       ...config,
     },
+    {
+      platform: 'config',
+      name: 'Config',
+      port: 8080,
+      sudo: false,
+    },
   ],
 };
 

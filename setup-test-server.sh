@@ -16,6 +16,7 @@ else
   unzip -d $DIR $ZIP
 fi
 
+npm link
 npm run build
 
 if [ -f "$DIR/config.json" ]; then
