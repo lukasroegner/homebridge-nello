@@ -1,0 +1,138 @@
+{
+  "pluginAlias": "NelloPlatform",
+  "pluginType": "platform",
+  "singular": true,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "auth": {
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "string"
+          },
+          "clientSecret": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "clientId",
+          "clientSecret"
+        ]
+      },
+      "common": {
+        "type": "object",
+        "properties": {
+          "lockTimeout": {
+            "description": "for how long should the lock be displayed as unlocked after you unlock the door\n\n(milliseconds)",
+            "type": "number"
+          },
+          "motionTimeout": {
+            "description": "for how long should the motion sensor be triggered after someone rings\n\n(milliseconds)",
+            "type": "number"
+          },
+          "locationUpdateInterval": {
+            "description": "Frequency to update locations from Nello (when devices are added or removed)\nalso dictates how often the reachability is updated\n(when the Nello API is down)\n\nUse 0 to disable continuous updates (will only update at startup).\n\n(milliseconds)",
+            "type": "number"
+          },
+          "webhookUpdateInterval": {
+            "description": "how often to regenerate webhook URLs and set a new signing key\n\nthis partially protects against replay attacks if an attacker gets\naccess to a webhook payload (see docs for dangerouslyEnableAlwaysOpenSwitch)\n\nquicker is better, however, updates that are too frequent can cause errors on the Nello API\n\n(milliseconds)",
+            "type": "number"
+          },
+          "exposeReachability": {
+            "description": "Expose the lock state as \"unknown\" when nello.io API is unreachable.\n\nUnfortunately, this also triggers a fake \"unlocked\" notification, so turn this off\nif you do not want that.",
+            "type": "boolean"
+          },
+          "videoDoorbell": {
+            "description": "If this value is set to true, a camera can be added to HomeKit (as extra accessory)\nand when someone rings at your door you will get a push notification with unlock button\n(The lock and the camera must be in the same room to see the unlock button)",
+            "type": "boolean"
+          },
+          "raspberryPiCamera": {
+            "description": "Use a video configuration adjusted for the camera module.",
+            "type": "boolean"
+          },
+          "motionSensor": {
+            "description": "Expose a motion sensor to HomeKit and trigger it every time someone rings.\n(Can be used for HomeKit automations and notifications.)",
+            "type": "boolean"
+          },
+          "dangerouslyEnableAlwaysOpenSwitch": {
+            "description": "Expose a switch to HomeKit. If the switch is enabled through HomeKit,\nevery time someone rings and Nello doesn't open the door automatically,\nthis plugin will open it for you. (Can be used for HomeKit automations.)\n\nThe URL and SHA256 HMAC key is regenerated periodically, but this is\nnot immune to replay attacks (within the locationUpdateInterval)\nsince Nello does not include a timestamp in their digest. Use at your own risk!\n\nContext: https://github.com/lukasroegner/homebridge-nello/issues/43",
+            "type": "boolean"
+          },
+          "publicWebhookUrl": {
+            "description": "Specify this if you would not like to use the Webhook Relay service and instead\nsetup port forwarding and Dynamic DNS to make a local Express server publicly accessible.\nMust be configured to the full URL (e.g. http://example.com:3000/ or https://example.com/)\nto register with Nello.io.",
+            "type": "string"
+          },
+          "webhookServerPort": {
+            "description": "Port to run the Express Webhook server on. Only relevant if you setup the\npublicWebhookUrl above.",
+            "type": "number"
+          },
+          "homekitUser": {
+            "description": "It's recommended to create another account in the nello app for this plugin.\nIn order to prevent duplicated notification you should enter the user name of\nthis HomeKit account. Default value is undefined.",
+            "type": "string"
+          },
+          "dryRun": {
+            "description": "Do not actually open the door, only log. Useful for testing.\n\nWARNING: This also allows unauthenticated webhooks for testing.\n\nThis is not a problen since this also disables door-opening,\nbut please be aware.",
+            "type": "boolean"
+          }
+        }
+      },
+      "video": {
+        "description": "If you have a doorbell with srtp support, or a Raspberry Pi camera module,\nyou can use this configuration.\n\nYou need to install ffmpeg if you want to see a picture in the Home app.\nJust take a look at last paragraph of the Installation part",
+        "type": "object",
+        "properties": {
+          "stream": {
+            "description": "Enter a stream url of e.g. your RaspberryPi camera or leave it blank\nif you don't have one",
+            "type": "string"
+          },
+          "snapshotImage": {
+            "description": "Set to either a URL or '-i <absolute-path-to-custom-local-image>'\n\nThe path MUST start with `/` and not `~` or be any other relative path\nIf you use an https:// address, make sure that ffmpeg is compiled with openssl",
+            "type": "string"
+          },
+          "maxWidth": {
+            "description": "Maximum width of the stream",
+            "type": "number"
+          },
+          "maxHeight": {
+            "description": "Maximum height of the stream",
+            "type": "number"
+          },
+          "maxFPS": {
+            "description": "Maximum frame per seconds of the stream",
+            "type": "number"
+          },
+          "vcodec": {
+            "description": "Set a video codec for ffmpeg",
+            "type": "string"
+          },
+          "ffmpegBinary": {
+            "description": "Custom path to ffmpeg binary",
+            "type": "string"
+          },
+          "rotate": {
+            "description": "(Pi Only) If set to true you will see all messages from ffmpeg",
+            "type": "number"
+          },
+          "debug": {
+            "description": "(Pi Only) Rotate the video stream (in degrees)",
+            "type": "boolean"
+          },
+          "verticalFlip": {
+            "description": "(Pi Only) Flip the stream vertically",
+            "type": "boolean"
+          },
+          "horizontalFlip": {
+            "description": "(Pi Only) Flip the stream horitzontally",
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "required": [
+      "auth",
+      "common",
+      "video"
+    ],
+    "$schema": "http://json-schema.org/draft-07/schema#"
+  }
+}
