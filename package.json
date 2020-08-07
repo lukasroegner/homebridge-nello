@@ -20,7 +20,9 @@
     "prepublishOnly": "rm -fR dist/ tsconfig.tsbuildinfo && npm run build",
     "lint": "eslint ./src/ --ext .js,.ts",
     "format": "eslint ./src/ --ext .js,.ts --fix",
-    "docs": "typedoc --inputFiles src/config.ts",
+    "docs": "run-p docs:*",
+    "docs:schema": "ts-node --project tsconfig.bin.json bin/generateConfigUISchema.ts",
+    "docs:web": "typedoc --inputFiles src/config.ts",
     "reset-test-server": "rm -fR ./homebridge-test-storage",
     "test-server": "./setup-test-server.sh && homebridge --debug --user-storage-path ./homebridge-test-storage"
   },
@@ -42,9 +44,11 @@
     "eslint-plugin-import": "^2.22.0",
     "homebridge": "^1.1.1",
     "homebridge-config-ui-x": "^4.24.0",
+    "npm-run-all": "^4.1.5",
     "ts-node": "^8.10.2",
     "typedoc": "^0.17.8",
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.7",
+    "typescript-json-schema": "^0.42.0"
   },
   "repository": {
     "type": "git",

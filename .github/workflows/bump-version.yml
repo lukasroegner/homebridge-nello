@@ -24,7 +24,7 @@ jobs:
           VERSION=$(npm version ${{ github.event.inputs.version }})
           echo "::set-output name=VERSION::$VERSION"
       - run: npm run docs && touch docs/.nojekyll
-      - run: "git add docs && git commit -m 'Update docs: ${{ steps.version.outputs.VERSION }}'"
+      - run: "git add docs config.schema.json && git commit -m 'Update docs: ${{ steps.version.outputs.VERSION }}'"
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
