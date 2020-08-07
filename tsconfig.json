@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "incremental": true,
-    "target": "es2019",
+    "target": "es2018",
     "module": "commonjs",
     "allowJs": true,
     "outDir": "./dist",
