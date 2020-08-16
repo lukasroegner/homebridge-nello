@@ -91,25 +91,25 @@
 				<p>It&#39;s recommended to create a new dedicated nello.io account in order to prevent duplicated notifications if you open the door over the Home app. It&#39;s also possible to use your own account with this plugin.</p>
 				<ol>
 					<li><p>Install the plugin via npm:</p>
-						<pre><code class="language-bash"> npm install homebridge-nello -g</code></pre>
+						<pre><code class="language-bash">npm install homebridge-nello -g</code></pre>
 					</li>
 					<li><p>Generate clientId &amp; clientSecret</p>
 						<p> <strong>IMPORTANT:</strong> Please visit <a href="https://auth.nello.io/admin/">https://auth.nello.io/admin/</a> and sign in with your username and password that you also use in the nello.io app. If you are using a dedicated user account for this plugin, make sure that you use the credentials of this account to generate a client ID.</p>
 						<p> Fill in all required fields in the &quot;Create API client&quot; form (mark all &quot;Allowed response type&quot;s and &quot;Allowed grant type&quot;s)</p>
 					</li>
 					<li><p>Add the basic configuration</p>
-						<pre><code class="language-json"> {
-   <span class="hljs-attr">&quot;platforms&quot;</span>: [
-     {
-       <span class="hljs-attr">&quot;platform&quot;</span> : <span class="hljs-string">&quot;NelloPlatform&quot;</span>,
-       <span class="hljs-attr">&quot;name&quot;</span> : <span class="hljs-string">&quot;nello.io&quot;</span>,
-       <span class="hljs-attr">&quot;auth&quot;</span>: {
-         <span class="hljs-attr">&quot;clientSecret&quot;</span>: <span class="hljs-string">&quot;&lt;paste-client-secret-here&gt;&quot;</span>,
-         <span class="hljs-attr">&quot;clientId&quot;</span>: <span class="hljs-string">&quot;&lt;paste-client-id-here&gt;&quot;</span>
-       }
-     }
-   ]
- }</code></pre>
+						<pre><code class="language-json">{
+  <span class="hljs-attr">&quot;platforms&quot;</span>: [
+    {
+      <span class="hljs-attr">&quot;platform&quot;</span> : <span class="hljs-string">&quot;NelloPlatform&quot;</span>,
+      <span class="hljs-attr">&quot;name&quot;</span> : <span class="hljs-string">&quot;nello.io&quot;</span>,
+      <span class="hljs-attr">&quot;auth&quot;</span>: {
+        <span class="hljs-attr">&quot;clientSecret&quot;</span>: <span class="hljs-string">&quot;&lt;paste-client-secret-here&gt;&quot;</span>,
+        <span class="hljs-attr">&quot;clientId&quot;</span>: <span class="hljs-string">&quot;&lt;paste-client-id-here&gt;&quot;</span>
+      }
+    }
+  ]
+}</code></pre>
 					</li>
 					<li><p>This exposes ONLY the door lock. Look at the <a href="https://lukasroegner.github.io/homebridge-nello/modules/_config_.html">docs</a> for more options to configure motion sensors, the video doorbell, a custom webhook server, automation helper switches, and configure reachability.</p>
 					</li>
