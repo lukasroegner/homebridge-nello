@@ -138,7 +138,7 @@ export class APIClient {
         }
 
         if (response.statusCode !== 200) {
-          const msgWithResponse = `${message}, status_code=${response.statusCode}, response=${JSON.stringify(responseBody, null, 2)}`;
+          const msgWithResponse = `${message}, status_code=${response.statusCode}, response=${JSON.stringify(responseBody)}`;
 
           if (response.statusCode === 429) {
             // 1 minute
