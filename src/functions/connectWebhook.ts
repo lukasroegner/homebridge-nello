@@ -91,7 +91,7 @@ const connectToWebhookRelay = (
   const key = crypto.randomBytes(32).toString('hex');
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  socket.on('error', (err: any) => {
+  socket.on('connect_error', (err: any) => {
     platform.log.error(err);
   });
 
