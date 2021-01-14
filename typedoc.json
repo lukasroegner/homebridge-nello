@@ -1,5 +1,4 @@
 {
-  "mode": "modules",
   "out": "docs",
   "includeVersion": true,
   "disableSources": true,

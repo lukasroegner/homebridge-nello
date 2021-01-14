@@ -23,7 +23,7 @@
     "format": "eslint ./src/ --ext .js,.ts --fix",
     "docs": "run-p docs:*",
     "docs:schema": "ts-node --project tsconfig.bin.json bin/generateConfigUISchema.ts",
-    "docs:web": "typedoc --inputFiles src/config.ts",
+    "docs:web": "typedoc src/config.ts",
     "reset-test-server": "rm -fR ./homebridge-test-storage",
     "test-server": "./setup-test-server.sh && homebridge --debug --user-storage-path ./homebridge-test-storage"
   },
