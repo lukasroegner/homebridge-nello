@@ -1,5 +1,16 @@
 # homebridge-nello
 
+## ⚠️ nello is offline, again - plugin archived
+
+As described by @pattyland in [home-assistant/core#57926](https://github.com/home-assistant/core/pull/57926):
+
+> After Locumi Labs GmbH, the manufacturer of Nello, went bankrupt in 2019, SCLAK continued to operate the servers until June 2021. According to unofficial sources, SCLAK also went bankrupt at the beginning of 2021 and was sold.
+For half a year now, the MQTT server with which the door opener connects is not accessible, the homepage (nello.io) is down and also the API (public-api.nello.io/v1) has long delivered only 500 errors. I think it's time to dispose of the integration and the hardware. :(
+
+Nello's servers are unlikely to come back online. This plugin will no longer be updated and should be removed from your Homebridge setup.
+
+---
+
 [![verified-by-homebridge](https://badgen.net/badge/homebridge/verified/purple)](https://github.com/homebridge/homebridge/wiki/Verified-Plugins)
 
 This project is a homebridge plugin for the smart intercom nello.io. All your nello.io locks are dynamically added to HomeKit as lock accessories. If you want to learn more about the smart intercom nello one, please visit <https://www.nello.io>.
@@ -12,10 +23,6 @@ This project is a homebridge plugin for the smart intercom nello.io. All your ne
 * Motion Sensor
 * Video Doorbell
 * Configurable Switch to automatically open the door on ring
-
-## Disclaimer
-
-Nello went bankrupt and was bought by Sclak. The public API was down for a long time after the announcement in October 2019 (though the app worked intermittently), but is back online as of August 2020. This plugin may stop working at any time due to this uncertainty. (See: [#48](https://github.com/lukasroegner/homebridge-nello/issues/48))
 
 ## Migration Guide from 0.5.x to 1.x.x
 
